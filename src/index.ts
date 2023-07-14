@@ -110,3 +110,10 @@ function createFormTemplate(schema: Schema) {
 }
 
 
+
+class Form {
+    constructor(private readonly schema: Schema, fields: string[], exclude: string[]) { }
+    render() {
+        return createFormTemplate(this.schema)
+    }
+}
