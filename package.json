@@ -1,0 +1,25 @@
+{
+  "name": "@jsnodor/form-lib",
+  "version": "1.0.0",
+  "description": "A library to create html forms from schema like objects in javascript following the pattern of an orm",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo 'form-lib works'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DalitsoSakala/form-lib-js.git"
+  },
+  "keywords": [
+    "forms",
+    "html",
+    "orm",
+    "layout"
+  ],
+  "author": "Dalitso Sakala <https://dalitsosakala.github.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DalitsoSakala/form-lib-js/issues"
+  },
+  "homepage": "https://github.com/DalitsoSakala/form-lib-js#readme"
+}
