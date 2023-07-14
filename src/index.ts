@@ -23,10 +23,11 @@ namespace fn_utils {
         let normalStr = ''
         for (let s of str) {
             if (/[A-Z]/.test(s))
-                normalStr += ' ' + s.toLowerCase()
+                normalStr += ' ' + s
             else normalStr += s
         }
-        return normalStr.replace(/\_/g, ' ')
+        normalStr = normalStr.replace(/\_+/g, ' ')
+        return normalStr[0].toUpperCase() + (normalStr.length > 1 && normalStr.substring(1).toLowerCase()||'')
     }
 }
 
@@ -112,8 +113,17 @@ function createFormTemplate(schema: Schema) {
 
 
 class Form {
-    constructor(private readonly schema: Schema, fields: string[], exclude: string[]) { }
-    render() {
-        return createFormTemplate(this.schema)
+    constructor(private readonly _schema: Schema, private readonly _config?: { fields: string[], exclude: string[] }) { }
+    _render() {
+        return createFormTemplate(this._schema)
+    }
+    toString() {
+        return this._render()
     }
 }
+
+console.log(new Form({
+    name: String,
+    gender: String,
+    age: Number,
+}) + '')
