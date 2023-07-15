@@ -6,6 +6,7 @@ A library to create html forms from schema like objects in javascript following 
 
 ```js
 
+
 let schema = {
     name: String,
     gender: String,
@@ -18,7 +19,15 @@ let schema = {
     date_of_birth: Date
 }
 
-createFormTemplate(schema)
+class MyForm extends Form {
+    configure() {
+        return {
+            schema
+        }
+    }
+}
+
+console.log(new MyForm() + '')
 
 ```
 
