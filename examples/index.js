@@ -20,4 +20,4 @@ class MyForm extends Form {
     }
 }
 
-console.log(new MyForm() + '')
+console.log(new MyForm().asDiv() + '')

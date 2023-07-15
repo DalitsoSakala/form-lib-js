@@ -2,7 +2,7 @@
 
 namespace FORM_LIB {
     type field_t = DateConstructor | StringConstructor | NumberConstructor | BooleanConstructor
-
+    declare type form_render_t = 'div' | 'p' | 'table'
     declare interface CompoundSchemaMetadata {
         type: field_t
         required?: boolean
@@ -11,13 +11,16 @@ namespace FORM_LIB {
         min?: number
         max?: number
     }
+    declare type layout_t = 'bs5' | undefined
     /**
      * When `fields` and `exclude` are not provided, all fields are rendered
      */
-    interface FormConfigMetadata {
+    declare interface FormConfigMetadata {
         schema: Schema
         fields?: string[]
         exclude?: string[]
+        tag?: string
+        renderType?: form_render_t
     }
 
     declare interface Schema {
@@ -25,7 +28,7 @@ namespace FORM_LIB {
     }
 
 
-    export namespace fn_utils {
+    namespace fn_utils {
         export function insertAtIndex(str: string, substring: string, index: number) {
             return str.slice(0, index) + substring + str.slice(index);
         }
@@ -42,7 +45,7 @@ namespace FORM_LIB {
         }
     }
 
-    export namespace html_element {
+    namespace html_element {
         export type input_name_t = 'text' | 'checkbox' | 'number' | 'date';
 
         export interface ElementProperties {
@@ -53,6 +56,7 @@ namespace FORM_LIB {
             validators?: string | RegExp
         }
 
+
         function setProps(elementString: string, propertiesMap: ElementProperties) {
             let idx = elementString.indexOf('>');
             let propertiesString = ' ';
@@ -62,79 +66,110 @@ namespace FORM_LIB {
             return fn_utils.insertAtIndex(elementString, propertiesString, elementString.indexOf('>'))
         }
 
-        export function createInputElement(name: string, type: input_name_t, extraProps: ElementProperties = {}) {
+        export function createInputElement(name: string, type: input_name_t, extraProps: ElementProperties = {}, configuration: FormConfigMetadata) {
             let template = '<input>'
             template = setProps(template, { name, type, ...extraProps })
             return template
         }
 
-        export function createLabelElement(name: string, extraProps: ElementProperties = {}) {
-            let template = '<label>' + fn_utils.readableString(name) + '</label>'
-            template = setProps(template, { name, ...extraProps })
+        export function createLabelElement(name: string, extraProps: ElementProperties = {}, configuration: FormConfigMetadata) {
+            let template = setProps('<label>', { for: name })
+            template += fn_utils.readableString(name) + '</label>'
             return template
         }
 
-        export function createDivElement(properties: ElementProperties = {}, ...children: string[]) {
-            let template = '<div>' + children.join('') + '</div>'
+        export function createDivElement(properties: ElementProperties = {}, configuration = <FormConfigMetadata>{}, ...children: string[]) {
+            let { renderType } = configuration
+            let template = setProps(`<${renderType}>`, properties)
+            template += children.join('') + `</${renderType}>`
             return setProps(template, properties)
         }
 
     }
 
-
-
-
-
-    function createFormTemplate({ schema, fields, exclude }: FormConfigMetadata) {
+    function createFormTemplate(configuration: FormConfigMetadata) {
+        let { createDivElement: Div, createInputElement: Input, createLabelElement: Label } = html_element
         let template = '';
+        let excludesLength = 0
+        let fieldsLength = 0
+        let { schema, fields, exclude, tag = '' } = configuration
 
-        let { createDivElement, createInputElement, createLabelElement } = html_element
+        fields = fields || []
+        exclude = exclude || []
+        fieldsLength = fields.length
+        excludesLength = exclude.length
+
+        if (fields.length && exclude.length) throw new Error('You can not set both `fields` and `exclude` on a form')
+
         for (let key in schema) {
-            let target = schema[key]
-            template += match(key, target)
+            let target: field_t | CompoundSchemaMetadata
+
+            if (excludesLength && exclude.includes(key)) continue
+            else if (fieldsLength && !fields.includes(key)) continue
+
+            target = schema[key]
+            template += match(key, target, {}, configuration)
         }
 
         return template;
 
-        function match(key: string, fieldTypeMetadata: field_t | CompoundSchemaMetadata, extraProps: html_element.ElementProperties = {}): string {
+        function match(name: string,
+            fieldTypeMetadata: field_t | CompoundSchemaMetadata, extraProps: html_element.ElementProperties = {},
+            configuration: FormConfigMetadata): string {
+            if ('required' in extraProps)
+                extraProps.required = 'required'
+            let inputDivOptions = {}
+            let DIV = (options: html_element.ElementProperties, ...children: string[]) => Div(options, configuration, ...children)
+
             switch (fieldTypeMetadata) {
                 case String:
-                    return createDivElement({}, createLabelElement(key), createInputElement(key, 'text', extraProps))
+                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'text', extraProps, configuration)))
                     break;
                 case Date:
-                    return createDivElement({}, createLabelElement(key), createInputElement(key, 'date', extraProps))
+                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'date', extraProps, configuration)))
                     break;
                 case Number:
-                    return createDivElement({}, createLabelElement(key), createInputElement(key, 'number', extraProps))
+                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'number', extraProps, configuration)))
                     break;
                 case Boolean:
-                    return createDivElement({}, createLabelElement(key), createInputElement(key, 'checkbox', extraProps))
+                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'checkbox', extraProps, configuration)))
                     break;
                 default:
                     // Compund schema metadata
-                    if (!('type' in fieldTypeMetadata)) throw TypeError('An invalid type descriptor was passed to describe a field "' + key + '"')
+                    if (!('type' in fieldTypeMetadata))
+                        return ''
+                    // throw TypeError('An invalid type descriptor was passed to describe a field "' + key + '"')
                     let attrs: any = { ...fieldTypeMetadata }
                     delete attrs.type
                     delete attrs.set
                     delete attrs.validators
 
-                    return match(key, fieldTypeMetadata.type, attrs)
+                    return match(name, fieldTypeMetadata.type, attrs, configuration)
 
             }
         }
     }
 
-
-
     export class Form {
+        static #ref_count = 0
         protected _schema!: Schema
         protected _fields?: string[]
         protected _exclude?: string[]
-        constructor(data?: any, args?: { instance: any }) { }
+        protected layout_pack: layout_t
+        constructor(private readonly _incomingData?: any, private readonly _args?: { instance: any }) {
+            Form.#ref_count++
+        }
 
-        protected _render() {
-            let config = this.configure()
-            return createFormTemplate(config)
+        private _render(renderType = <form_render_t>'div') {
+            let tag = 'form_' + Form.#ref_count
+            let config = this.configure(tag)
+            return createFormTemplate({ ...config, renderType })
+        }
+        asP() {
+            return this._render('p')
+        }
+        asDiv() {
+            return this._render('div')
         }
         toString() {
             return this._render()
@@ -143,7 +178,7 @@ namespace FORM_LIB {
          * Configure your form from here
          * @returns Metadata to configure the form
          */
-        protected configure(): FormConfigMetadata {
+        protected configure(assignedTag: string): FormConfigMetadata {
             return {} as FormConfigMetadata
         }
     }
