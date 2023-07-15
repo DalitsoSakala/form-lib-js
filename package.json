@@ -4,7 +4,8 @@
   "description": "A library to create html forms from schema like objects in javascript following the pattern of an orm",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo 'form-lib works'"
+    "test": "echo 'form-lib works'",
+    "examples":"node examples/index.js"
   },
   "repository": {
     "type": "git",
