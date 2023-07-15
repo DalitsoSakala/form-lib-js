@@ -1,21 +1,26 @@
 
 
 namespace FORM_LIB {
-    type field_t = DateConstructor | StringConstructor | NumberConstructor | BooleanConstructor
+    type field_metadata_t = DateConstructor | StringConstructor | NumberConstructor | BooleanConstructor | CompoundSchemaMetadata
     declare type form_render_t = 'div' | 'p' | 'table'
     declare interface CompoundSchemaMetadata {
-        type: field_t
+        type: field_metadata_t
+        /** Add more specificity to the intended type*/
+        specificType?: input_type_t
         required?: boolean
         pattern?: string | RegExp
         default?: any
         min?: number
         max?: number
+        choices?: any[][] | null
     }
+    declare type input_type_t = 'text' | 'checkbox' | 'number' | 'date' | 'datetime' | 'color' | 'phone' | 'email' | 'password';
     declare type layout_t = 'bs5' | undefined
     /**
      * When `fields` and `exclude` are not provided, all fields are rendered
      */
     declare interface FormConfigMetadata {
+        form: Form,
         schema: Schema
         fields?: string[]
         exclude?: string[]
@@ -24,7 +29,7 @@ namespace FORM_LIB {
     }
 
     declare interface Schema {
-        [k: string]: field_t | CompoundSchemaMetadata
+        [k: string]: field_metadata_t | CompoundSchemaMetadata
     }
 
 
@@ -46,19 +51,10 @@ namespace FORM_LIB {
     }
 
     namespace html_element {
-        export type input_name_t = 'text' | 'checkbox' | 'number' | 'date';
-
-        export interface ElementProperties {
-            name?: string
-            type?: string
-            id?: string
-            for?: string
-            validators?: string | RegExp
-        }
 
 
-        function setProps(elementString: string, propertiesMap: ElementProperties) {
-            let idx = elementString.indexOf('>');
+
+        export function setProps(elementString: string, propertiesMap: any) {
             let propertiesString = ' ';
             for (let key in propertiesMap) {
                 propertiesString += ' ' + key + '=\'' + (propertiesMap as any)[key] + '\' '
@@ -66,113 +62,239 @@ namespace FORM_LIB {
             return fn_utils.insertAtIndex(elementString, propertiesString, elementString.indexOf('>'))
         }
 
-        export function createInputElement(name: string, type: input_name_t, extraProps: ElementProperties = {}, configuration: FormConfigMetadata) {
-            let template = '<input>'
-            template = setProps(template, { name, type, ...extraProps })
-            return template
-        }
-
-        export function createLabelElement(name: string, extraProps: ElementProperties = {}, configuration: FormConfigMetadata) {
-            let template = setProps('<label>', { for: name })
-            template += fn_utils.readableString(name) + '</label>'
-            return template
-        }
-
-        export function createDivElement(properties: ElementProperties = {}, configuration = <FormConfigMetadata>{}, ...children: string[]) {
-            let { renderType } = configuration
-            let template = setProps(`<${renderType}>`, properties)
-            template += children.join('') + `</${renderType}>`
-            return setProps(template, properties)
-        }
-
-    }
-
-    function createFormTemplate(configuration: FormConfigMetadata) {
-        let { createDivElement: Div, createInputElement: Input, createLabelElement: Label } = html_element
-        let template = '';
-        let excludesLength = 0
-        let fieldsLength = 0
-        let { schema, fields, exclude, tag = '' } = configuration
-
-        fields = fields || []
-        exclude = exclude || []
-        fieldsLength = fields.length
-        excludesLength = exclude.length
-
-        if (fields.length && exclude.length) throw new Error('You can not set both `fields` and `exclude` on a form')
-
-        for (let key in schema) {
-            let target: field_t | CompoundSchemaMetadata
-
-            if (excludesLength && exclude.includes(key)) continue
-            else if (fieldsLength && !fields.includes(key)) continue
-
-            target = schema[key]
-            template += match(key, target, {}, configuration)
-        }
-
-        return template;
-
-        function match(name: string,
-            fieldTypeMetadata: field_t | CompoundSchemaMetadata, extraProps: html_element.ElementProperties = {},
-            configuration: FormConfigMetadata): string {
-            if ('required' in extraProps)
-                extraProps.required = 'required'
-            let inputDivOptions = {}
-            let DIV = (options: html_element.ElementProperties, ...children: string[]) => Div(options, configuration, ...children)
-
-            switch (fieldTypeMetadata) {
-                case String:
-                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'text', extraProps, configuration)))
-                    break;
-                case Date:
-                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'date', extraProps, configuration)))
-                    break;
-                case Number:
-                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'number', extraProps, configuration)))
-                    break;
-                case Boolean:
-                    return DIV({}, Label(name, {}, configuration), DIV(inputDivOptions, Input(name, 'checkbox', extraProps, configuration)))
-                    break;
-                default:
-                    // Compund schema metadata
-                    if (!('type' in fieldTypeMetadata))
-                        return ''
-                    // throw TypeError('An invalid type descriptor was passed to describe a field "' + key + '"')
-                    let attrs: any = { ...fieldTypeMetadata }
-                    delete attrs.type
-                    delete attrs.set
-                    delete attrs.validators
-
-                    return match(name, fieldTypeMetadata.type, attrs, configuration)
-
+        export function validateValue(type: string, value: any) {
+            let str = ''
+            if (/^date$/i.test(type)) {
+                str = new Date(value).toISOString()
+                return str.substring(0, str.indexOf('T'))
             }
+            return value
+        }
+
+
+    }
+
+
+    function generateFieldElement(name: string, metadata: field_metadata_t, extraData: any = {}): Element {
+        let instance: Element
+        let type: input_type_t | null = null
+        switch (metadata) {
+            case Date:
+                type = 'date'
+                break
+            case String:
+                type = 'text'
+                break
+            case Number:
+                type = 'number'
+                break
+            case Boolean:
+                type = 'checkbox'
+                break
+            default:
+                // CompoundMetadata
+                let _metadata = <CompoundSchemaMetadata>metadata
+                let extraData: any = {}
+                if (!_metadata.type)
+                    // type = 'text'
+                    throw new Error('A valid type is required')
+                Object.assign(extraData, _metadata)
+                delete extraData.type
+                return generateFieldElement(name, _metadata.type, extraData)
+        }
+        let { choices = null, default: _default = null } = extraData
+
+        if (choices) {
+            instance = new SelectElement(extraData.choices, _default)
+            delete extraData.choices
+        } else
+            instance = new InputElement(type!, _default)
+
+        'default' in extraData && delete extraData.default
+        extraData.required && instance.addAttrs({ required: 'required' }) || delete extraData.required
+        'enum' in extraData && instance.addAttrs({ pattern: extraData.enum }) && delete extraData.enum
+
+        instance.addAttrs({ name, ...extraData, id: name })
+        return instance
+
+    }
+
+    function generateDefaultLayout(schema: Schema) {
+        let children: Element[] = []
+        for (let name in schema) {
+            let outerWrapper: ContainerElement
+            let field = generateFieldElement(name, schema[name] as field_metadata_t)
+            let label = new LabelElement(name)
+            let fieldWrapper = new ContainerElement('div', [field], {})
+            let labelWrapper = new ContainerElement('div', [label], {})
+
+            outerWrapper = new ContainerElement('div', [labelWrapper, fieldWrapper])
+            children.push(outerWrapper)
+        }
+        return children
+    }
+
+    abstract class Element {
+        protected attrs = <any>{}
+        protected cssClass = ''
+        protected cssId = ''
+        protected children?: Element[]
+        protected hasClosingTag = true
+        protected useTag = true
+        constructor(private readonly tag: string) {
+        }
+        get Props(): any {
+            let props = { ...this.attrs }
+            let { cssClass, cssId } = this
+
+            if (this.cssClass?.length)
+                props['class'] = cssClass + (' ' + this.attrs['class'] || '')
+            if (this.cssId?.length)
+                props['id'] = cssId
+
+            return props
+        }
+
+        /**
+         * This method is invoked just before the element renders.
+         * It is safe to do any configuration you think will be useful in the render process.
+         **/
+        prepareRender() { }
+
+        addAttrs(attrs = <any>{}) {
+            for (let attr in attrs) {
+                let value = attrs[attr]
+                if (/^(disabled|checked|selected)$/i.test(attr))
+                    if (value) switch (attr) {
+                        case 'disabled':
+                            value = 'disabled';
+                            break
+                        case 'checked':
+                            value = 'checked';
+                            break
+                        case 'selected':
+                            value = 'selected';
+                            break
+                    }
+                    else continue
+                this.attrs[attr] = attrs[attr]
+            }
+            return this
+        }
+
+        protected _render() {
+            let template = ''
+            this.prepareRender()
+
+            if (this.tag.length) {
+                if (this.useTag) {
+                    let props = this.Props
+                    if (props.value && props.type) this.addAttrs({ value: html_element.validateValue(props.type, props.value) })
+                    template += html_element.setProps(`<${this.tag}>`, this.Props)
+                }
+                if (this.children?.length && this.hasClosingTag)
+                    for (let child of this.children!)
+                        template += child.toString()
+                if (this.hasClosingTag)
+                    if (this.useTag) template += `</${this.tag}>`
+            }
+            return template
+        }
+
+        toString() {
+            return this._render()
+        }
+
+    }
+
+    class ContainerElement extends Element {
+        constructor(tag: string, protected readonly children: Element[], attrs: any = {}, protected readonly cssClass: string = '', protected readonly cssId: string = '') {
+            super(tag)
+            this.addAttrs(true)
         }
     }
 
-    export class Form {
+    class InputElement extends Element {
+        constructor(type: input_type_t = 'text', value: any) {
+            super('input')
+            this.addAttrs({ type })
+
+            if (value !== null && value !== undefined)
+                this.addAttrs({ value })
+            this.hasClosingTag = false
+        }
+    }
+    class TextNode extends Element {
+        constructor(private readonly text: string) {
+            super('')
+        }
+        get Props(): any {
+            return {}
+        }
+        protected _render(): string {
+            return this.text
+        }
+    }
+
+    class LabelElement extends Element {
+        constructor(formControlName: string) {
+            super('label')
+            this.children = [new TextNode(fn_utils.readableString(formControlName))]
+            this.addAttrs({ 'for': formControlName })
+        }
+    }
+    class OptionElement extends Element {
+        constructor(text: string, value: string, selected = false) {
+            super('option')
+            this.addAttrs({ value, selected })
+            this.children = [new TextNode(text)]
+        }
+    }
+    class SelectElement extends Element {
+        constructor(choices: any[], defaultValue: any) {
+            super('select')
+            let children: OptionElement[] = []
+
+            for (let choice of choices) {
+                let isSelected = defaultValue ? defaultValue == choice : false
+                let instance = new OptionElement(choice, choice, isSelected)
+                children.push(instance)
+            }
+            this.children = children
+        }
+    }
+
+    export class Form extends Element {
         static #ref_count = 0
-        protected _schema!: Schema
-        protected _fields?: string[]
-        protected _exclude?: string[]
-        protected layout_pack: layout_t
+
+        protected layoutPack: layout_t
+        protected formTag = true
+        protected fieldCssClass = ''
+
+
+
         constructor(private readonly _incomingData?: any, private readonly _args?: { instance: any }) {
+            super('form')
             Form.#ref_count++
+            this.cssId = 'form_id_' + Form.#ref_count
         }
 
-        private _render(renderType = <form_render_t>'div') {
+        /**@override */
+        protected _render(renderType = <form_render_t>'div') {
             let tag = 'form_' + Form.#ref_count
             let config = this.configure(tag)
-            return createFormTemplate({ ...config, renderType })
+            this.children = generateDefaultLayout(config.schema)
+            this.useTag = this.FormTag
+            return super._render()
+        }
+        get FormTag() {
+            return this.formTag
         }
         asP() {
             return this._render('p')
         }
         asDiv() {
             return this._render('div')
-        }
-        toString() {
-            return this._render()
         }
         /**
          * Configure your form from here
