@@ -12,10 +12,14 @@ let schema = {
     date_of_birth: Date
 }
 
+
+
 class MyForm extends Form {
-    configure() {
+    configure(tag) {
         return {
-            schema
+            tag,
+            schema,
+            fields:['name','age','date_of_birth']
         }
     }
 }
