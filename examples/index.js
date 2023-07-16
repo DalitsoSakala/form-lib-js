@@ -55,9 +55,9 @@ class MyForm extends Form {
         this.fieldCssClass = 'd-block'
         this.formTag = false
     }
-    configure(refPrefix) {
+    configure(tagPrefix) {
         return {
-            refPrefix,
+            tagPrefix,
             schema,
         }
     }
