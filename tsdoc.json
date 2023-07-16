@@ -1,0 +1,37 @@
+{
+	"tags":
+	{
+		"allowUnknownTags" : true
+	},
+	"plugins":[
+		 "plugins/markdown"
+		,"/home/dalitso/.nvm/versions/node/v18.16.0/lib/node_modules/tsdoc/template/plugins/TSDoc.js"
+	],
+	"opts":
+	{
+		"template"	:"/home/dalitso/.nvm/versions/node/v18.16.0/lib/node_modules/tsdoc/template",
+		"recurse"	:"true"
+	},
+	"templates" : {
+		"cleverLinks"     : false,
+		"monospaceLinks"  : false
+	},
+	"source":
+	{
+		"includePattern": "(\\.d)?\\.ts$"
+	},
+	"markdown"  : {
+		"parser"   : "gfm",
+		"hardwrap" : true
+	},
+	"tsdoc":{
+		"source"		:"/home/dalitso/Projects/npm/form-lib-js/src/",
+		"destination"	:"/home/dalitso/Projects/npm/form-lib-js/docs",
+		"tutorials"		:"",
+		"systemName"	: "form-lib-js",
+		"footer"		: "",
+		"copyright"		: "form-lib-js Copyright © 2023 dalitso.",
+		"outputSourceFiles" : true,
+		"commentsOnly": true
+	}
+}

@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/DalitsoSakala/form-lib-js/issues"
   },
-  "homepage": "https://github.com/DalitsoSakala/form-lib-js#readme"
+  "homepage": "https://github.com/DalitsoSakala/form-lib-js#readme",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
 }
