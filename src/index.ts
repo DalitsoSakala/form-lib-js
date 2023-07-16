@@ -14,7 +14,7 @@ namespace FORM_LIB {
         max?: number
         choices?: any[][] | null
     }
-    declare type input_type_t = 'text' | 'checkbox' | 'number' | 'date' | 'datetime' | 'color' | 'phone' | 'email' | 'password';
+    declare type input_type_t = 'text' | 'checkbox' | 'number' | 'date' | 'datetime' | 'color' | 'phone' | 'email' | 'password' | 'radio';
     declare type layout_t = 'bs5' | undefined
     /**
      * When `fields` and `exclude` are not provided, all fields are rendered
@@ -64,9 +64,12 @@ namespace FORM_LIB {
 
         export function validateValue(type: string, value: any) {
             let str = ''
-            if (/^date$/i.test(type)) {
+            if (/^(date)/i.test(type)) {
                 str = new Date(value).toISOString()
-                return str.substring(0, str.indexOf('T'))
+                if (/^date$/i.test(type))
+                    return str.substring(0, str.indexOf('T'))
+                else if (/^datetime$/i.test(type))
+                    return str.substring(0, 16)
             }
             return value
         }
@@ -76,7 +79,7 @@ namespace FORM_LIB {
 
 
     function generateFieldElement(name: string, metadata: field_metadata_t, extraData: any = {}): Element {
-        let instance: Element
+        let instance: Element | null = null
         let type: input_type_t | null = null
         switch (metadata) {
             case Date:
@@ -102,33 +105,58 @@ namespace FORM_LIB {
                 delete extraData.type
                 return generateFieldElement(name, _metadata.type, extraData)
         }
-        let { choices = null, default: _default = null } = extraData
+        let { choices = null, default: _default = null, rows = null, cols = null, specificType } = extraData
 
         if (choices) {
-            instance = new SelectElement(extraData.choices, _default)
+            if (!specificType)
+                instance = new SelectElement(extraData.choices, _default)
+            else if (specificType == 'radio') {
+                return new ContainerElement('div',
+                    new Array<0>(choices.length).fill(
+                        0
+                    ).map((_, i) => {
+                        return new ContainerElement('div',
+                            [new LabelElement(choices[i]), new InputElement('radio').addAttrs({ name, value: choices[i], id: choices[i] })]
+                        )
+                    })
+                )
+            }
+
             delete extraData.choices
-        } else
-            instance = new InputElement(type!, _default)
+        } else if (specificType) {
+            instance = new InputElement(specificType, _default);
+        } else {
+            instance = /number/.test(typeof rows + typeof cols) ? new TextAreaElement(rows || 2, cols || 20, _default) : new InputElement(type!, _default);
+        }
+        if (instance) {
+            'default' in extraData && delete extraData.default
+            specificType in extraData && instance.addAttrs({ type: specificType }) && delete extraData.specificType
+            extraData.required && instance.addAttrs({ required: 'required' }) || delete extraData.required
+            'enum' in extraData && instance.addAttrs({ pattern: extraData.enum }) && delete extraData.enum
 
-        'default' in extraData && delete extraData.default
-        extraData.required && instance.addAttrs({ required: 'required' }) || delete extraData.required
-        'enum' in extraData && instance.addAttrs({ pattern: extraData.enum }) && delete extraData.enum
-
-        instance.addAttrs({ name, ...extraData, id: name })
-        return instance
+            instance.addAttrs({ name, ...extraData, id: name })
+            return instance
+        }
+        else throw Error('Could not create an element to compose the layout')
 
     }
 
-    function generateDefaultLayout(schema: Schema) {
+    function generateDefaultLayout(schema: Schema, containerTag: form_render_t = 'div') {
         let children: Element[] = []
+        let wrapChild = /(div|table)/.test(containerTag)
+        let childWrapperTag = ''
+
+        if (wrapChild)
+            childWrapperTag = containerTag == 'table' ? 'td' : containerTag
+
         for (let name in schema) {
-            let outerWrapper: ContainerElement
+            let outerWrapper: ContainerElement<Element>
             let field = generateFieldElement(name, schema[name] as field_metadata_t)
             let label = new LabelElement(name)
-            let fieldWrapper = new ContainerElement('div', [field], {})
-            let labelWrapper = new ContainerElement('div', [label], {})
+            let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
+            let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
 
-            outerWrapper = new ContainerElement('div', [labelWrapper, fieldWrapper])
+            outerWrapper = new ContainerElement(containerTag, [labelWrapper, fieldWrapper])
             children.push(outerWrapper)
         }
         return children
@@ -142,6 +170,7 @@ namespace FORM_LIB {
         protected hasClosingTag = true
         protected useTag = true
         constructor(private readonly tag: string) {
+
         }
         get Props(): any {
             let props = { ...this.attrs }
@@ -181,6 +210,11 @@ namespace FORM_LIB {
             }
             return this
         }
+        rmAttrs(...attrs: string[]) {
+            for (let attr of attrs)
+                delete this.attrs[attr]
+            return this
+        }
 
         protected _render() {
             let template = ''
@@ -192,12 +226,13 @@ namespace FORM_LIB {
                     if (props.value && props.type) this.addAttrs({ value: html_element.validateValue(props.type, props.value) })
                     template += html_element.setProps(`<${this.tag}>`, this.Props)
                 }
-                if (this.children?.length && this.hasClosingTag)
-                    for (let child of this.children!)
-                        template += child.toString()
-                if (this.hasClosingTag)
-                    if (this.useTag) template += `</${this.tag}>`
             }
+            if (this.children?.length)
+                for (let child of this.children!)
+                    template += child.toString()
+            if (this.hasClosingTag && this.tag.length)
+                if (this.useTag) template += `</${this.tag}>`
+
             return template
         }
 
@@ -207,15 +242,25 @@ namespace FORM_LIB {
 
     }
 
-    class ContainerElement extends Element {
-        constructor(tag: string, protected readonly children: Element[], attrs: any = {}, protected readonly cssClass: string = '', protected readonly cssId: string = '') {
+    class ContainerElement<T extends Element> extends Element {
+        constructor(tag: string, protected readonly children: T[], attrs: any = {}, protected readonly cssClass: string = '', protected readonly cssId: string = '') {
             super(tag)
-            this.addAttrs(true)
+            tag.length &&
+                this.addAttrs(attrs)
         }
     }
 
+    class TextAreaElement extends Element {
+        constructor(rows: number | string = 2, cols: number | string = 8, value: any = '') {
+            super('textarea')
+            this.addAttrs({ cols, rows })
+
+            if (value !== null && value !== undefined)
+                this.addAttrs({ value })
+        }
+    }
     class InputElement extends Element {
-        constructor(type: input_type_t = 'text', value: any) {
+        constructor(type: input_type_t = 'text', value: any = null) {
             super('input')
             this.addAttrs({ type })
 
@@ -283,7 +328,7 @@ namespace FORM_LIB {
         protected _render(renderType = <form_render_t>'div') {
             let tag = 'form_' + Form.#ref_count
             let config = this.configure(tag)
-            this.children = generateDefaultLayout(config.schema)
+            this.children = generateDefaultLayout(config.schema, renderType)
             this.useTag = this.FormTag
             return super._render()
         }
