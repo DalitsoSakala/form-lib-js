@@ -84,6 +84,7 @@ namespace FORM_LIB {
         let instance: Element | null = null
         let type: input_type_t | null = null
         let { choices = null, default: _default = null, rows = null, cols = null, specificType } = <CompoundSchemaMetadata>resolvedCompundMetadataArg
+        let value = attrs.value || _default
 
         switch (naiveMetadataArg) {
             case Date:
@@ -109,10 +110,10 @@ namespace FORM_LIB {
                 delete truncated.type
                 return generateFieldElement(name, _metadata.type, truncated, attrs)
         }
-        console.log(attrs)
+
         if (choices?.length) {
             if (!specificType)
-                instance = new SelectElement(choices, _default)
+                instance = new SelectElement(choices, attrs.value || _default)
             else if (specificType == 'radio') {
                 return new ContainerElement('div',
                     new Array<0>(choices.length).fill(
@@ -120,9 +121,13 @@ namespace FORM_LIB {
                     ).map((_, i) => {
                         let chcs = choices!
                         let fieldId = (attrs.id ? attrs.id + '_' : '') + chcs[i]
-                        
+                        let value = chcs[i]
+
                         return new ContainerElement('div',
-                            [new LabelElement(chcs[i]).addAttrs({ for: fieldId }), new InputElement('radio').addAttrs({ name, value: chcs[i], id: fieldId })]
+                            [
+                                new LabelElement(value).addAttrs({ for: fieldId }),
+                                new InputElement('radio').addAttrs({ name, value, id: fieldId, checked: attrs.value == value || _default == value })
+                            ]
                         )
                     })
                 )
@@ -130,17 +135,18 @@ namespace FORM_LIB {
 
             delete resolvedCompundMetadataArg.choices
         } else if (specificType) {
-            instance = new InputElement(specificType, _default);
+            instance = new InputElement(specificType, value);
         } else {
-            instance = /number/.test(typeof rows + typeof cols) ? new TextAreaElement(rows || 2, cols || 20, _default) : new InputElement(type!, _default);
+            instance = /number/.test(typeof rows + typeof cols) ? new TextAreaElement(rows || 2, cols || 20, value) :
+                new InputElement(type!, value);
         }
         if (instance) {
+            delete attrs.value
             'default' in resolvedCompundMetadataArg && delete resolvedCompundMetadataArg.default
             'specificType' in resolvedCompundMetadataArg && instance.addAttrs({ type: specificType }) && delete resolvedCompundMetadataArg.specificType
             resolvedCompundMetadataArg.required && instance.addAttrs({ required: 'required' }) || delete resolvedCompundMetadataArg.required
             'enum' in resolvedCompundMetadataArg && instance.addAttrs({ pattern: resolvedCompundMetadataArg.enum }) && delete resolvedCompundMetadataArg.enum
 
-            console.log(resolvedCompundMetadataArg)
             instance.addAttrs({ ...resolvedCompundMetadataArg, ...attrs, name })
             return instance
         }
@@ -148,7 +154,7 @@ namespace FORM_LIB {
 
     }
 
-    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_t = 'div') {
+    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_t = 'div', _incomingData = <any>{}) {
         let children: Element[] = []
         let wrapChild = /(div|table)/.test(containerTag)
         let childWrapperTag = ''
@@ -163,7 +169,9 @@ namespace FORM_LIB {
         for (let name in schema) {
             let fieldCssId = (refPrefix.length ? refPrefix + '_' : '') + name
             let outerWrapper: ContainerElement<Element>
-            let field = generateFieldElement(name, schema[name] as field_metadata_t, {}, { id: fieldCssId })
+            let value = _incomingData[name]
+            let attrs = { id: fieldCssId, }
+            let field = generateFieldElement(name, schema[name] as field_metadata_t, {}, value && { ...attrs } || attrs)
             let label = new LabelElement(name).addAttrs({ 'for': fieldCssId })
             let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
@@ -179,6 +187,7 @@ namespace FORM_LIB {
         protected cssClass = ''
         protected cssId = ''
         protected children?: Element[]
+        protected hoistedChildren?: Element[]
         protected hasClosingTag = true
         protected useTag = true
         constructor(private readonly tag: string) {
@@ -230,6 +239,9 @@ namespace FORM_LIB {
                 this.attrs[attr] = attrs[attr]
             }
             return this
+        }
+        getAttr(attributeName: string) {
+            return this.attrs[attributeName]
         }
         rmAttrs(...attrs: string[]) {
             for (let attr of attrs)
@@ -343,7 +355,7 @@ namespace FORM_LIB {
          * @param _incomingData a javascript object having the keys from the schema and their values
          * @param _args 
          */
-        constructor(private readonly _incomingData?: any, private readonly _args?: { instance: any }) {
+        constructor(private readonly _incomingData = <any>{}, private readonly _args?: { instance: any }) {
             super('form')
             Form.#ref_count++
         }
@@ -355,9 +367,10 @@ namespace FORM_LIB {
             let schema = Form.#_filterSchema(config)
 
 
-            this.children = generateDefaultLayout({ ...config, schema }, renderType)
+            this.children = generateDefaultLayout({ ...config, schema }, renderType, this._incomingData||{})
             this.useTag = this.FormTag
             this.FormCssId = this.FormCssId || config.refPrefix || ''
+            
             return super._render()
         }
         static #_filterSchema(config: FormConfigMetadata) {
