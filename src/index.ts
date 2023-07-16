@@ -385,6 +385,13 @@ namespace FORM_LIB {
         }
     }
 
+    Object.defineProperties(FORM_LIB, {
+        Form: {
+            writable: false,
+            configurable: false,
+        }
+    })
+
 
     if (isBrowser())
         Object.assign(global, { FORM_LIB })
