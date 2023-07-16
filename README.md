@@ -9,7 +9,15 @@
 
 let schema = {
     name: String,
-    gender: String,
+    color:{
+        type: String,
+        specificType:'color'
+    },
+    gender: {
+        choices:['male','female'],
+        type:String,
+        default:'male'
+    },
     isRegistered: Boolean,
     age: {
         type: Number,
@@ -35,35 +43,54 @@ Will generate
 
 ```html
 <!-- Example form -->
-<form id='form_1'>
+<form>
     <div>
-        <div><label for='form_1_name'>Name</label></div>
-        <div><input type='text' name='name' id='form_1_name'></div>
+        <div><label for='name'>Name</label></div>
+        <div><input type='text' name='name' id='name'></div>
     </div>
     <div>
-        <div><label for='form_1_gender'>Gender</label></div>
-        <div><input type='text' name='gender' id='form_1_gender'></div>
+        <div><label for='color'>Color</label></div>
+        <div><input type='color' name='color' id='color'></div>
     </div>
     <div>
-        <div><label for='form_1_isRegistered'>Is registered</label></div>
-        <div><input type='checkbox' name='isRegistered' id='form_1_isRegistered'></div>
+        <div><label for='gender'>Gender</label></div>
+        <div><select name='gender' id='gender'>
+                <option value='male' selected='selected'>male</option>
+                <option value='female'>female</option>
+            </select></div>
     </div>
     <div>
-        <div><label for='form_1_age'>Age</label></div>
-        <div><input type='number' required='true' min='0' name='age' id='form_1_age'></div>
+        <div><label for='isRegistered'>Is registered</label></div>
+        <div><input type='checkbox' name='isRegistered' id='isRegistered'></div>
     </div>
     <div>
-        <div><label for='form_1_date_of_birth'>Date of birth</label></div>
-        <div><input type='date' name='date_of_birth' id='form_1_date_of_birth'></div>
+        <div><label for='age'>Age</label></div>
+        <div><input type='number' required='required' min='0' name='age' id='age'></div>
+    </div>
+    <div>
+        <div><label for='date_of_birth'>Date of birth</label></div>
+        <div><input type='date' name='date_of_birth' id='date_of_birth'></div>
     </div>
 </form>
 ```
+![image preview](./examples/preview.png)
 
 ## Usage
 
-Depend on this library in the node environment or in the browser (via the `FORM_LIB` global object).
+Depend on this library in the node environment or importing it in the browser (via the `FORM_LIB` global object).
 
-See the [Usage guide](./docs/INDEX.md) for more.
+```html
+<script src="path/to/FORM_LIB/dist/index.js"></script>
+<script>
+    let Form = FORM_LIB.Form
+</script>
+```
+
+or
+
+```js
+let { Form } = require('@jsnodor/form-lib')
+```
 
 ## Capabilities
 
@@ -82,7 +109,6 @@ See the [Usage guide](./docs/INDEX.md) for more.
 - Does partial validation of date values
 
 - Sets some html attributs `id`, `value`, `selected`, e.t.c (try out for more)
-
 
 ## Pending features
 

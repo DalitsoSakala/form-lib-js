@@ -134,16 +134,14 @@ namespace FORM_LIB {
             }
 
             delete resolvedCompundMetadataArg.choices
-        } else if (specificType) {
-            instance = new InputElement(specificType, value);
         } else {
             instance = /number/.test(typeof rows + typeof cols) ? new TextAreaElement(rows || 2, cols || 20, value) :
-                new InputElement(type!, value);
+                new InputElement(specificType || type!, value);
         }
         if (instance) {
             delete attrs.value
             'default' in resolvedCompundMetadataArg && delete resolvedCompundMetadataArg.default
-            'specificType' in resolvedCompundMetadataArg && instance.addAttrs({ type: specificType }) && delete resolvedCompundMetadataArg.specificType
+            'specificType' in resolvedCompundMetadataArg && delete resolvedCompundMetadataArg.specificType
             resolvedCompundMetadataArg.required && instance.addAttrs({ required: 'required' }) || delete resolvedCompundMetadataArg.required
             'enum' in resolvedCompundMetadataArg && instance.addAttrs({ pattern: resolvedCompundMetadataArg.enum }) && delete resolvedCompundMetadataArg.enum
 
@@ -154,7 +152,7 @@ namespace FORM_LIB {
 
     }
 
-    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_type_t = 'div', _incomingData = <any>{},form:Form) {
+    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_type_t = 'div', _incomingData = <any>{}, form: Form) {
         let children: Element[] = []
         let wrapChild = /(div|table)/.test(containerTag)
         let childWrapperTag = ''
@@ -176,7 +174,7 @@ namespace FORM_LIB {
             let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
 
-            outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper]).addAttrs({'class':form.fieldCssClass})
+            outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper]).addAttrs({ 'class': form.fieldCssClass })
             children.push(outerWrapper)
         }
         return children
@@ -223,20 +221,18 @@ namespace FORM_LIB {
                     this.cssId = value
                     continue
                 }
-                if (/^(disabled|checked|selected)$/i.test(attr))
-                    if (value) switch (attr) {
-                        case 'disabled':
-                            value = 'disabled';
-                            break
-                        case 'checked':
-                            value = 'checked';
-                            break
-                        case 'selected':
-                            value = 'selected';
-                            break
+                if (attr == 'class') {
+                    this.cssClass = value
+                    continue
+                }
+                if (/^(disabled|checked|selected|novalidate|required)$/i.test(attr)) {
+                    if (value) {
+                        value = attr
                     }
                     else continue
-                this.attrs[attr] = attrs[attr]
+                }
+
+                this.attrs[attr] = value
             }
             return this
         }
@@ -367,7 +363,7 @@ namespace FORM_LIB {
             let schema = Form.#_filterSchema(config)
 
 
-            this.children = generateDefaultLayout({ ...config, schema }, renderType, this._incomingData||{},this)
+            this.children = generateDefaultLayout({ ...config, schema }, renderType, this._incomingData || {}, this)
             this.useTag = this.FormTag
             this.FormCssId = this.FormCssId || config.refPrefix || ''
 

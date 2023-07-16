@@ -2,62 +2,31 @@ let { Form } = require('../dist/index')
 let fs = require('fs')
 let { join } = require('path')
 
+
 let schema = {
-    libraryName: {
-        default: '@jsnodor',
+    name: String,
+    color:{
         type: String,
-        required: true
+        specificType:'color'
     },
-    applicableEnvironment: {
-        type: String,
-        default: 'web',
-        choices: ['node', 'web'],
+    gender: {
+        choices:['male','female'],
+        type:String,
+        default:'male'
     },
-    applicability: {
-        type: String,
-        specificType: 'radio',
-        choices: ['web', 'express', 'react', 'vue', 'angular'],
-    },
-    configurationRequired: Boolean,
-    numberOfVersions: {
+    isRegistered: Boolean,
+    age: {
         type: Number,
         min: 0,
-        required: true,
-        enum: /\w/
+        required: true
     },
-    brand_color: {
-        type: String,
-        specificType: 'color',
-        default: '#0000ee'
-    },
-    date_created: {
-        type: Date,
-        specificType: 'datetime',
-        default: new Date
-    },
-    descriptionOf_library: {
-        type: String,
-        rows: 3
-    },
-    timeOfReview: {
-        type: String,
-        specificType: 'time',
-        default: '11:30'
-    }
+    date_of_birth: Date
 }
 
-
-
 class MyForm extends Form {
-    constructor() {
-        super(null)
-        this.FormCssClass = 'form-horizontal'
-        this.fieldCssClass = 'd-flex'
-    }
-    configure(refPrefix) {
+    configure() {
         return {
-            refPrefix,
-            schema,
+            schema
         }
     }
 }
