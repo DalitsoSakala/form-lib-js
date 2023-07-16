@@ -1,6 +1,6 @@
 # form-lib
 
-A library to create html forms from schema like objects in javascript following the pattern of an orm
+> A library to create html forms from schema like objects in javascript (inpired by you know which framework).
 
 ## Example
 
