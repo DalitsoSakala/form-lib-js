@@ -154,7 +154,7 @@ namespace FORM_LIB {
 
     }
 
-    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_type_t = 'div', _incomingData = <any>{}) {
+    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_type_t = 'div', _incomingData = <any>{},form:Form) {
         let children: Element[] = []
         let wrapChild = /(div|table)/.test(containerTag)
         let childWrapperTag = ''
@@ -173,7 +173,7 @@ namespace FORM_LIB {
             let attrs = { id: fieldCssId, }
             let field = generateFieldElement(name, schema[name] as field_metadata_t, {}, value && { ...attrs } || attrs)
             let label = new LabelElement(name).addAttrs({ 'for': fieldCssId })
-            let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
+            let fieldWrapper = new ContainerElement(childWrapperTag, [field], {}).addAttrs({'class':form.fieldCssClass})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
 
             outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper])
@@ -347,7 +347,7 @@ namespace FORM_LIB {
         static #ref_count = 0
 
         protected layoutPack: layout_t
-        protected fieldCssClass = ''
+        fieldCssClass = ''
 
 
         /**
@@ -367,7 +367,7 @@ namespace FORM_LIB {
             let schema = Form.#_filterSchema(config)
 
 
-            this.children = generateDefaultLayout({ ...config, schema }, renderType, this._incomingData||{})
+            this.children = generateDefaultLayout({ ...config, schema }, renderType, this._incomingData||{},this)
             this.useTag = this.FormTag
             this.FormCssId = this.FormCssId || config.refPrefix || ''
 

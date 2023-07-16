@@ -51,13 +51,12 @@ let schema = {
 class MyForm extends Form {
     constructor() {
         super(null)
-        this.formCssClass = 'form-horizontal'
+        this.FormCssClass = 'form-horizontal'
         this.fieldCssClass = 'd-block'
-        this.formTag = false
     }
-    configure(tagPrefix) {
+    configure(refPrefix) {
         return {
-            tagPrefix,
+            refPrefix,
             schema,
         }
     }
@@ -66,6 +65,6 @@ class MyForm extends Form {
 
 fs.writeFileSync(
     join(__dirname, 'example.html'),
-    '<!-- Example form -->' + new MyForm().asTable(),
+    '<!-- Example form -->' + new MyForm(),
     { encoding: 'utf-8' }
 )
