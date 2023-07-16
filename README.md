@@ -132,3 +132,6 @@ let { Form } = require('@jsnodor/form-lib')
 ## Pending features
 
 - Incorporate bootstrap css classes for the form
+
+---
+Special thanks to [@chilusoft](https://github.com/chilusoft), [@lembani](https://github.com/lembani),  & [@WazaDev](https://github.com/wazabanda)
