@@ -137,4 +137,4 @@ let { Form } = require('@jsnodor/form-lib')
 Special thanks to [@chilusoft](https://github.com/chilusoft), [@lembani](https://github.com/lembani), [@WazaDev](https://github.com/wazabanda).
 
 ---
-Dedicated to [@MissK](https://github.com/agnessmutentwa) for your Birthday. Enjoy your new year as you start your career in computer science!
+Dedicated to [@AgnessKabuba](https://github.com/agnessmutentwa) for your Birthday. Enjoy your new year as you start your career in computer science!
