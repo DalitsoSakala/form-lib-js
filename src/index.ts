@@ -2,7 +2,7 @@
 
 namespace FORM_LIB {
     type field_metadata_t = DateConstructor | StringConstructor | NumberConstructor | BooleanConstructor | CompoundSchemaMetadata
-    declare type form_render_t = 'div' | 'p' | 'table'
+    declare type form_render_type_t = 'div' | 'p' | 'table'
     declare interface CompoundSchemaMetadata {
         type: field_metadata_t
         /** Add more specificity to the intended type*/
@@ -27,7 +27,7 @@ namespace FORM_LIB {
         fields?: string[]
         exclude?: string[]
         refPrefix?: string
-        renderType?: form_render_t
+        renderType?: form_render_type_t
     }
 
     declare interface Schema {
@@ -154,7 +154,7 @@ namespace FORM_LIB {
 
     }
 
-    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_t = 'div', _incomingData = <any>{}) {
+    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_type_t = 'div', _incomingData = <any>{}) {
         let children: Element[] = []
         let wrapChild = /(div|table)/.test(containerTag)
         let childWrapperTag = ''
@@ -362,7 +362,7 @@ namespace FORM_LIB {
 
 
         /**@override */
-        protected _render(renderType = <form_render_t>'div') {
+        protected _render(renderType = <form_render_type_t>'div') {
             let config = this.#_validateConfiguration()
             let schema = Form.#_filterSchema(config)
 
@@ -370,7 +370,7 @@ namespace FORM_LIB {
             this.children = generateDefaultLayout({ ...config, schema }, renderType, this._incomingData||{})
             this.useTag = this.FormTag
             this.FormCssId = this.FormCssId || config.refPrefix || ''
-            
+
             return super._render()
         }
         static #_filterSchema(config: FormConfigMetadata) {
