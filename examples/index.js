@@ -52,7 +52,7 @@ class MyForm extends Form {
     constructor() {
         super(null)
         this.FormCssClass = 'form-horizontal'
-        this.fieldCssClass = 'd-block'
+        this.fieldCssClass = 'd-flex'
     }
     configure(refPrefix) {
         return {

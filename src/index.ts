@@ -173,10 +173,10 @@ namespace FORM_LIB {
             let attrs = { id: fieldCssId, }
             let field = generateFieldElement(name, schema[name] as field_metadata_t, {}, value && { ...attrs } || attrs)
             let label = new LabelElement(name).addAttrs({ 'for': fieldCssId })
-            let fieldWrapper = new ContainerElement(childWrapperTag, [field], {}).addAttrs({'class':form.fieldCssClass})
+            let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
 
-            outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper])
+            outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper]).addAttrs({'class':form.fieldCssClass})
             children.push(outerWrapper)
         }
         return children

@@ -63,6 +63,8 @@ Will generate
 
 Depend on this library in the node environment or in the browser (via the `FORM_LIB` global object).
 
+See the [Usage guide](./docs/INDEX.md) for more.
+
 ## Capabilities
 
 - Uses very simple configuration, the most basic of configuration requires you implementing the `configure` method
@@ -80,6 +82,7 @@ Depend on this library in the node environment or in the browser (via the `FORM_
 - Does partial validation of date values
 
 - Sets some html attributs `id`, `value`, `selected`, e.t.c (try out for more)
+
 
 ## Pending features
 
