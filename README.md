@@ -80,9 +80,22 @@ Will generate
 Depend on this library in the node environment or importing it in the browser (via the `FORM_LIB` global object).
 
 ```html
+<form></form>
 <script src="path/to/FORM_LIB/dist/index.js"></script>
 <script>
     let Form = FORM_LIB.Form
+
+    let schema= ...
+    class MyForm extends Form {
+        configure(){
+            this.FormTag=false
+            return {
+                schema
+            }
+        }
+    }
+    let form = new MyForm
+    document.querySelector('form').innerHTML=form.toString()
 </script>
 ```
 
@@ -90,6 +103,12 @@ or
 
 ```js
 let { Form } = require('@jsnodor/form-lib')
+
+...
+
+    res.send(form.toString())
+
+...
 ```
 
 ## Capabilities
