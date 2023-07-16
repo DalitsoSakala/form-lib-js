@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo 'form-lib works'",
-    "examples":"node examples/index.js"
+    "test:examples": "tsc && npm run examples",
+    "examples": "node examples/index.js"
   },
   "repository": {
     "type": "git",
