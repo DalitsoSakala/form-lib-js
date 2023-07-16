@@ -347,7 +347,7 @@ namespace FORM_LIB {
 
 
         /**
-         * 
+         * @deprecated _incomingData should not be used to set the instance, use `_args.instance` instead 
          * @param _incomingData a javascript object having the keys from the schema and their values
          * @param _args 
          */
