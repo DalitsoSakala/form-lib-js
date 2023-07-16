@@ -1,4 +1,4 @@
-
+/// <reference path="./plugins/util.ts" />
 
 namespace FORM_LIB {
     type field_metadata_t = DateConstructor | StringConstructor | NumberConstructor | BooleanConstructor | CompoundSchemaMetadata
@@ -35,23 +35,6 @@ namespace FORM_LIB {
     }
 
 
-    namespace fn_utils {
-        export function insertAtIndex(str: string, substring: string, index: number) {
-            return str.slice(0, index) + substring + str.slice(index);
-        }
-
-        export function readableString(str: string) {
-            let normalStr = ''
-            for (let s of str) {
-                if (/[A-Z]/.test(s))
-                    normalStr += ' ' + s
-                else normalStr += s
-            }
-            normalStr = normalStr.replace(/\_+/g, ' ')
-            return normalStr[0].toUpperCase() + (normalStr.length > 1 && normalStr.substring(1).toLowerCase() || '')
-        }
-    }
-
     namespace html_element {
 
 
@@ -61,7 +44,7 @@ namespace FORM_LIB {
             for (let key in propertiesMap) {
                 propertiesString += ' ' + key + '=\'' + (propertiesMap as any)[key] + '\' '
             }
-            return fn_utils.insertAtIndex(elementString, propertiesString, elementString.indexOf('>'))
+            return plugins.insertAtIndex(elementString, propertiesString, elementString.indexOf('>'))
         }
 
         export function validateValue(type: string, value: any) {
@@ -315,7 +298,7 @@ namespace FORM_LIB {
     class LabelElement extends Element {
         constructor(formControlName: string) {
             super('label')
-            this.children = [new TextNode(fn_utils.readableString(formControlName))]
+            this.children = [new TextNode(plugins.readableString(formControlName))]
         }
     }
     class OptionElement extends Element {
