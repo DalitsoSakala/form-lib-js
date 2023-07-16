@@ -13,6 +13,11 @@ let schema = {
         default: 'web',
         choices: ['node', 'web'],
     },
+    applicability: {
+        type: String,
+        specificType: 'radio',
+        choices: ['web', 'express', 'react', 'vue', 'angular'],
+    },
     configurationRequired: Boolean,
     numberOfVersions: {
         type: Number,
@@ -20,9 +25,24 @@ let schema = {
         required: true,
         enum: /\w/
     },
+    brand_color: {
+        type: String,
+        specificType: 'color',
+        default: '#0000ee'
+    },
     date_created: {
         type: Date,
+        specificType: 'datetime',
         default: new Date
+    },
+    descriptionOf_library: {
+        type: String,
+        rows: 3
+    },
+    timeOfReview: {
+        type: String,
+        specificType: 'time',
+        default: '11:30'
     }
 }
 
