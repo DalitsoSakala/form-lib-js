@@ -145,9 +145,12 @@ namespace FORM_LIB {
         let children: Element[] = []
         let wrapChild = /(div|table)/.test(containerTag)
         let childWrapperTag = ''
+        let rowTag = ''
 
         if (wrapChild)
             childWrapperTag = containerTag == 'table' ? 'td' : containerTag
+
+        rowTag = containerTag == 'table' ? 'tr' : containerTag
 
         for (let name in schema) {
             let outerWrapper: ContainerElement<Element>
@@ -156,7 +159,7 @@ namespace FORM_LIB {
             let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
 
-            outerWrapper = new ContainerElement(containerTag, [labelWrapper, fieldWrapper])
+            outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper])
             children.push(outerWrapper)
         }
         return children
@@ -218,20 +221,22 @@ namespace FORM_LIB {
 
         protected _render() {
             let template = ''
+            let { tag } = this
             this.prepareRender()
-
-            if (this.tag.length) {
-                if (this.useTag) {
-                    let props = this.Props
-                    if (props.value && props.type) this.addAttrs({ value: html_element.validateValue(props.type, props.value) })
-                    template += html_element.setProps(`<${this.tag}>`, this.Props)
-                }
+            if (tag.length && this.useTag) {
+                let props = this.Props
+                if (props.value && props.type) this.addAttrs({ value: html_element.validateValue(props.type, props.value) })
+                template += html_element.setProps(`<${tag}>`, this.Props)
             }
+
+
             if (this.children?.length)
                 for (let child of this.children!)
                     template += child.toString()
-            if (this.hasClosingTag && this.tag.length)
-                if (this.useTag) template += `</${this.tag}>`
+
+            if (this.hasClosingTag && tag.length && this.useTag)
+                template += `</${tag}>`
+            tag == 'tr' && console.log(template)
 
             return template
         }
@@ -340,6 +345,9 @@ namespace FORM_LIB {
         }
         asDiv() {
             return this._render('div')
+        }
+        asTable() {
+            return this._render('table')
         }
         /**
          * Configure your form from here

@@ -53,6 +53,7 @@ class MyForm extends Form {
         super(null)
         this.formCssClass = 'form-horizontal'
         this.fieldCssClass = 'd-block'
+        this.formTag = false
     }
     configure(tag) {
         return {
@@ -62,4 +63,9 @@ class MyForm extends Form {
     }
 }
 
-fs.writeFileSync(join(__dirname, 'example.html'), '<!-- Example form -->' + new MyForm().asDiv(), { encoding: 'utf-8' })
+
+fs.writeFileSync(
+    join(__dirname, 'example.html'),
+    '<!-- Example form -->' + new MyForm().asTable(),
+    { encoding: 'utf-8' }
+)
