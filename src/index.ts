@@ -12,7 +12,9 @@ namespace FORM_LIB {
         default?: any
         min?: number
         max?: number
-        choices?: any[][] | null
+        cols?: number | string
+        rows?: number | string
+        choices?: any[] | null
     }
     declare type input_type_t = 'text' | 'checkbox' | 'number' | 'date' | 'datetime' | 'color' | 'phone' | 'email' | 'password' | 'radio';
     declare type layout_t = 'bs5' | undefined
@@ -24,7 +26,7 @@ namespace FORM_LIB {
         schema: Schema
         fields?: string[]
         exclude?: string[]
-        tag?: string
+        refPrefix?: string
         renderType?: form_render_t
     }
 
@@ -78,10 +80,12 @@ namespace FORM_LIB {
     }
 
 
-    function generateFieldElement(name: string, metadata: field_metadata_t, extraData: any = {}): Element {
+    function generateFieldElement(name: string, naiveMetadataArg: field_metadata_t, resolvedCompundMetadataArg: any = {}, attrs = <any>{}): Element {
         let instance: Element | null = null
         let type: input_type_t | null = null
-        switch (metadata) {
+        let { choices = null, default: _default = null, rows = null, cols = null, specificType } = <CompoundSchemaMetadata>resolvedCompundMetadataArg
+
+        switch (naiveMetadataArg) {
             case Date:
                 type = 'date'
                 break
@@ -96,56 +100,60 @@ namespace FORM_LIB {
                 break
             default:
                 // CompoundMetadata
-                let _metadata = <CompoundSchemaMetadata>metadata
-                let extraData: any = {}
+                let _metadata = <CompoundSchemaMetadata>naiveMetadataArg
+                let truncated: any = {}
                 if (!_metadata.type)
                     // type = 'text'
                     throw new Error('A valid type is required')
-                Object.assign(extraData, _metadata)
-                delete extraData.type
-                return generateFieldElement(name, _metadata.type, extraData)
+                Object.assign(truncated, _metadata)
+                delete truncated.type
+                return generateFieldElement(name, _metadata.type, truncated, attrs)
         }
-        let { choices = null, default: _default = null, rows = null, cols = null, specificType } = extraData
-
-        if (choices) {
+        console.log(attrs)
+        if (choices?.length) {
             if (!specificType)
-                instance = new SelectElement(extraData.choices, _default)
+                instance = new SelectElement(choices, _default)
             else if (specificType == 'radio') {
                 return new ContainerElement('div',
                     new Array<0>(choices.length).fill(
                         0
                     ).map((_, i) => {
+                        let chcs = choices!
+                        let fieldId = (attrs.id ? attrs.id + '_' : '') + chcs[i]
+                        
                         return new ContainerElement('div',
-                            [new LabelElement(choices[i]), new InputElement('radio').addAttrs({ name, value: choices[i], id: choices[i] })]
+                            [new LabelElement(chcs[i]).addAttrs({ for: fieldId }), new InputElement('radio').addAttrs({ name, value: chcs[i], id: fieldId })]
                         )
                     })
                 )
             }
 
-            delete extraData.choices
+            delete resolvedCompundMetadataArg.choices
         } else if (specificType) {
             instance = new InputElement(specificType, _default);
         } else {
             instance = /number/.test(typeof rows + typeof cols) ? new TextAreaElement(rows || 2, cols || 20, _default) : new InputElement(type!, _default);
         }
         if (instance) {
-            'default' in extraData && delete extraData.default
-            specificType in extraData && instance.addAttrs({ type: specificType }) && delete extraData.specificType
-            extraData.required && instance.addAttrs({ required: 'required' }) || delete extraData.required
-            'enum' in extraData && instance.addAttrs({ pattern: extraData.enum }) && delete extraData.enum
+            'default' in resolvedCompundMetadataArg && delete resolvedCompundMetadataArg.default
+            'specificType' in resolvedCompundMetadataArg && instance.addAttrs({ type: specificType }) && delete resolvedCompundMetadataArg.specificType
+            resolvedCompundMetadataArg.required && instance.addAttrs({ required: 'required' }) || delete resolvedCompundMetadataArg.required
+            'enum' in resolvedCompundMetadataArg && instance.addAttrs({ pattern: resolvedCompundMetadataArg.enum }) && delete resolvedCompundMetadataArg.enum
 
-            instance.addAttrs({ name, ...extraData, id: name })
+            console.log(resolvedCompundMetadataArg)
+            instance.addAttrs({ ...resolvedCompundMetadataArg, ...attrs, name })
             return instance
         }
         else throw Error('Could not create an element to compose the layout')
 
     }
 
-    function generateDefaultLayout(schema: Schema, containerTag: form_render_t = 'div') {
+    function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_t = 'div') {
         let children: Element[] = []
         let wrapChild = /(div|table)/.test(containerTag)
         let childWrapperTag = ''
         let rowTag = ''
+        let { schema, refPrefix = '' } = metadata
 
         if (wrapChild)
             childWrapperTag = containerTag == 'table' ? 'td' : containerTag
@@ -153,9 +161,10 @@ namespace FORM_LIB {
         rowTag = containerTag == 'table' ? 'tr' : containerTag
 
         for (let name in schema) {
+            let fieldCssId = (refPrefix.length ? refPrefix + '_' : '') + name
             let outerWrapper: ContainerElement<Element>
-            let field = generateFieldElement(name, schema[name] as field_metadata_t)
-            let label = new LabelElement(name)
+            let field = generateFieldElement(name, schema[name] as field_metadata_t, {}, { id: fieldCssId })
+            let label = new LabelElement(name).addAttrs({ 'for': fieldCssId })
             let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
 
@@ -175,6 +184,9 @@ namespace FORM_LIB {
         constructor(private readonly tag: string) {
 
         }
+        /**
+         * Always read from this function when assigning css attributes
+         */
         get Props(): any {
             let props = { ...this.attrs }
             let { cssClass, cssId } = this
@@ -183,6 +195,7 @@ namespace FORM_LIB {
                 props['class'] = cssClass + (' ' + this.attrs['class'] || '')
             if (this.cssId?.length)
                 props['id'] = cssId
+            else delete props['id']
 
             return props
         }
@@ -194,8 +207,13 @@ namespace FORM_LIB {
         prepareRender() { }
 
         addAttrs(attrs = <any>{}) {
+
             for (let attr in attrs) {
                 let value = attrs[attr]
+                if (attr == 'id') {
+                    this.cssId = value
+                    continue
+                }
                 if (/^(disabled|checked|selected)$/i.test(attr))
                     if (value) switch (attr) {
                         case 'disabled':
@@ -290,7 +308,6 @@ namespace FORM_LIB {
         constructor(formControlName: string) {
             super('label')
             this.children = [new TextNode(fn_utils.readableString(formControlName))]
-            this.addAttrs({ 'for': formControlName })
         }
     }
     class OptionElement extends Element {
@@ -314,32 +331,69 @@ namespace FORM_LIB {
         }
     }
 
-    export class Form extends Element {
+    export abstract class Form extends Element {
         static #ref_count = 0
 
         protected layoutPack: layout_t
-        protected formTag = true
         protected fieldCssClass = ''
 
 
-
+        /**
+         * 
+         * @param _incomingData a javascript object having the keys from the schema and their values
+         * @param _args 
+         */
         constructor(private readonly _incomingData?: any, private readonly _args?: { instance: any }) {
             super('form')
             Form.#ref_count++
-            this.cssId = 'form_id_' + Form.#ref_count
         }
+
 
         /**@override */
         protected _render(renderType = <form_render_t>'div') {
-            let tag = 'form_' + Form.#ref_count
-            let config = this.configure(tag)
-            this.children = generateDefaultLayout(config.schema, renderType)
+            let config = this.#_validateConfiguration()
+            let schema = Form.#_filterSchema(config)
+
+
+            this.children = generateDefaultLayout({ ...config, schema }, renderType)
             this.useTag = this.FormTag
+            this.FormCssId = this.FormCssId || config.refPrefix || ''
             return super._render()
         }
-        get FormTag() {
-            return this.formTag
+        static #_filterSchema(config: FormConfigMetadata) {
+            let orderedSchema = <any>null
+            let { exclude = null, fields = null, schema } = config
+            if (exclude) {
+                for (let name in schema)
+                    if (exclude.includes(name))
+                        delete schema[name]
+            }
+            else if (fields) {
+                orderedSchema = {}
+                for (let field of fields)
+                    orderedSchema[field] = schema[field]
+            }
+            return <Schema>orderedSchema || schema
+
         }
+        #_validateConfiguration() {
+            let reference = 'form_' + Form.#ref_count
+            let config = this.configure(reference)
+            let { exclude = null, fields = null } = config
+            if (exclude && fields) throw new Error('You can configure both `fields` and `exclude')
+            return config
+        }
+        /**
+         * Configure your form from here
+         * @param refPrefix Tag used to prefix css id's of this form (if `cssId` is not assigned) 
+         * and it's children.
+         * It should have an entry in the object returned by this function otherwise this prefix is
+         * ignored.
+         * @returns Metadata to configure the form
+         */
+        abstract configure(refPrefix: string): FormConfigMetadata
+
+
         asP() {
             return this._render('p')
         }
@@ -349,12 +403,23 @@ namespace FORM_LIB {
         asTable() {
             return this._render('table')
         }
-        /**
-         * Configure your form from here
-         * @returns Metadata to configure the form
-         */
-        protected configure(assignedTag: string): FormConfigMetadata {
-            return {} as FormConfigMetadata
+
+
+        protected set FormCssId(cssId: string) {
+            this.cssId = cssId
+        }
+        get FormCssId() {
+            return this.cssId
+        }
+
+        protected set FormCssClass(cssClass: string) {
+            this.cssClass = cssClass
+        }
+        protected set FormTag(useFormTag: boolean) {
+            this.useTag = useFormTag
+        }
+        protected get FormTag() {
+            return this.useTag
         }
     }
 
