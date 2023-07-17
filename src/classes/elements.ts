@@ -108,11 +108,25 @@ export abstract class BaseElement implements IElement {
 }
 
 
-export class ContainerElement<T extends BaseElement> extends BaseElement {
+export class ContainerElement<T extends BaseElement> extends BaseElement implements IFieldContainer {
+    #containedField: string = ''
+    #containedElementName: string = ''
     constructor(tag: string, protected readonly children: T[], attrs: any = {}, protected readonly cssClass: string = '', protected readonly cssId: string = '') {
         super(tag)
         tag.length &&
             this.addAttrs(attrs)
+    }
+    get ContainedField(): string {
+        return this.#containedField
+    }
+    set ContainedField(fieldName: string) {
+        this.#containedField = fieldName.trim()
+    }
+    get ContainedFieldElement(): string {
+        return this.#containedElementName
+    }
+    set ContainedFieldElement(elementName: string) {
+        this.#containedElementName = elementName.trim()
     }
 
 }

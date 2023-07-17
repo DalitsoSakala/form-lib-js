@@ -46,6 +46,9 @@ declare interface SchemaSettings {
     $cssClasses?: {
         [k: string]: string
     }
+    $fieldWrapperCssClasses?: {
+        [k: string]: string
+    }
 }
 
 
@@ -72,7 +75,16 @@ interface ISchemaPlaginFn {
 declare interface KVMap {
     [k: number | string]: any
 }
-declare interface IElement  {
+
+declare interface IFieldContainer  extends IElement{
+    get ContainedField(): string
+    set ContainedField(fieldName: string)
+
+    set ContainedFieldElement(elementName: string)
+    get ContainedFieldElement(): string
+}
+
+declare interface IElement {
     get Props(): any
     get Tag(): string
     prepareRender()

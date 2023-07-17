@@ -105,6 +105,10 @@ namespace FORM_LIB {
             let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
 
+            fieldWrapper.ContainedField = name
+            fieldWrapper.ContainedFieldElement = field.Tag
+            tools.applyPluginsToElement(fieldWrapper, form.GroupId)
+            
             outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper]).addAttrs({ 'class': form.fieldCssClass })
             children.push(outerWrapper)
         }

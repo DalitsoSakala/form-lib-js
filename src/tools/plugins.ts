@@ -13,8 +13,17 @@ export function applyPluginsToElement(element: IElement, configGroup: number) {
 
         if ('schema' in config) {
             let transformations = config.schema
+
+            // Input control
             let elementCssClasses = transformations.$cssClasses || {}
             let classesToApply = elementCssClasses[element.Tag] || ''
+
+            classesToApply.trim().length && element.addCssClass(classesToApply)
+
+
+            // Input control wrapper
+            elementCssClasses = transformations.$fieldWrapperCssClasses || {}
+            classesToApply = elementCssClasses[(element as IFieldContainer).ContainedFieldElement] || ''
 
             classesToApply.trim().length && element.addCssClass(classesToApply)
 

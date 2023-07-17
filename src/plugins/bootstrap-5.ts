@@ -14,7 +14,7 @@ let plugin: ISchemaPlaginFn = function plugin() {
                 textarea: 'form-control',
                 select: 'form-select',
             },
-            $fieldCssClasses: {
+            $fieldWrapperCssClasses: {
                 input: 'input-group',
                 textarea: 'input-group',
                 select: 'input-group',
