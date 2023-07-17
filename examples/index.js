@@ -1,4 +1,4 @@
-let { Form } = require('../dist/index')
+let { Form } = require('../dist/index-commonjs')
 let fs = require('fs')
 let { join } = require('path')
 

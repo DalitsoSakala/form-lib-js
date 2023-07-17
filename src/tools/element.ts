@@ -1,11 +1,11 @@
 
 
-export function setProps(elementString: string, propertiesMap: any, plugins: { insertAtIndex: (e: string, prop: string, idx: number) => string }) {
+export function setProps(elementString: string, propertiesMap: any, tools: { insertAtIndex: (e: string, prop: string, idx: number) => string }) {
     let propertiesString = ' ';
     for (let key in propertiesMap) {
         propertiesString += ' ' + key + '=\'' + (propertiesMap as any)[key] + '\' '
     }
-    return plugins.insertAtIndex(elementString, propertiesString, elementString.indexOf('>'))
+    return tools.insertAtIndex(elementString, propertiesString, elementString.indexOf('>'))
 }
 
 

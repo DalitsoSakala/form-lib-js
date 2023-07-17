@@ -1,4 +1,4 @@
-import * as plugins from '../plugins/index'
+import * as tools from '../tools/index'
 
 
 
@@ -73,9 +73,9 @@ export abstract class BaseElement {
         this.prepareRender()
         if (tag.length && this.useTag) {
             let props = this.Props
-            if (props.value && props.type) this.addAttrs({ value: plugins.validateValue(props.type, props.value) })
+            if (props.value && props.type) this.addAttrs({ value: tools.validateValue(props.type, props.value) })
 
-            template += plugins.setProps(`<${tag}>`, this.Props, plugins)
+            template += tools.setProps(`<${tag}>`, this.Props, tools)
         }
 
 
@@ -145,7 +145,7 @@ export class TextNode extends BaseElement {
 export class LabelElement extends BaseElement {
     constructor(formControlName: string) {
         super('label')
-        this.children = [new TextNode(plugins.readableString(formControlName))]
+        this.children = [new TextNode(tools.readableString(formControlName))]
     }
 }
 

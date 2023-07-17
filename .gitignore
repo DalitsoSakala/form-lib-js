@@ -133,3 +133,4 @@ dist
 # Custom
 example.html
 docs/
+build/

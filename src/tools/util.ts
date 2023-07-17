@@ -13,7 +13,7 @@ export function readableString(str: string) {
 }
 
 
-export function registerModule(API: any, closedProperties: string[] = []) {
+export function registerModule(global: typeof globalThis, API: any, closedProperties: string[] = []) {
 
 
     function isBrowser() {
