@@ -13,7 +13,7 @@ export function readableString(str: string) {
 }
 
 
-export function registerModule(global: typeof globalThis, API: any, closedProperties: string[] = []) {
+export function registerModule(module: NodeModule, API: any, moduleName: string, closedProperties: string[] = []) {
 
 
     function isBrowser() {
@@ -49,7 +49,8 @@ export function registerModule(global: typeof globalThis, API: any, closedProper
     }
 
 
-    if (isBrowser())
-        Object.assign(global, { API })
-    else Object.assign(global, API)
+    if (isBrowser()) {
+        (globalThis as any)[moduleName] = API
+    }
+    else module.exports = API
 }
