@@ -2,13 +2,13 @@
   "name": "@jsnodor/form-lib",
   "version": "0.0.1",
   "description": "A library to create html forms from schema like objects in javascript (inpired by you know which framework).",
-  "main": "build/commonjs/index.js",
+  "main": "dist/index-commonjs.js",
   "scripts": {
     "test": "echo 'form-lib works'",
     "build": "npm run clean; tsc --build tsconfig-commonjs.json && tsc --build tsconfig-es6.json && webpack",
     "clean": "rm -r build ; rm -r dist",
     "test:examples": "npm run build && npm run examples",
-    "examples": "node examples/index.js"
+    "examples": "node examples/cli-example.js"
   },
   "repository": {
     "type": "git",
