@@ -7,6 +7,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@jsnodor/form-lib</title>
 
+    <style>
+        .row {
+            display: flex;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        .row >:first-child{
+            position: relative;
+            height: 100%;
+            padding-top: 3rem;
+        }
+        .row >:first-child::before{
+            content: 'Preview';
+            position: absolute;
+            border-radius: 1rem;
+            background-color: orange;
+            padding: .3rem 1rem;
+            color: white;
+            top: 0;
+            left: 0;
+        }
+
+        pre code {
+            padding: 1rem;
+            display: block;
+            color: blue;
+            background-color: rgb(197, 197, 197);
+        }
+    </style>
+
     <script src="../dist/index-es6.js"></script>
 
     <script>
@@ -44,12 +74,38 @@
         <p>
             <code>formInstance.asTable()</code>
         </p>
-        <p>
-            Wrap output in a table element when you assign <code>this.FormTag=false</code>
-        </p>
-        <form>
-            <table></table>
-        </form>
+
+        <div class="row">
+
+            <form>
+
+                <p>
+                    Wrap output in a table element when you assign <code>this.FormTag=false</code>
+                </p>
+                <table></table>
+            </form>
+            <pre>
+            <code>
+    
+ let schema = {
+    name: {
+        type: String,
+        placeholder: 'Enter your name'
+    },
+    age: Number,
+    password: {
+        type: String,
+        specificType: 'password'
+    },
+    history: {
+        type: String,
+        rows: 2, // Presence of `rows` or `cols` attribute will render a textarea
+    },
+}
+            </code>
+           </pre>
+        </div>
+
     </div>
 
 
