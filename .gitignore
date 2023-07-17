@@ -131,6 +131,6 @@ dist
 
 
 # Custom
-example.html
+cli-example-output.html
 docs/
 build/
