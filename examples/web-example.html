@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@jsnodor/form-lib</title>
+
+    <script src="../dist/index-es6.js"></script>
+
+    <script>
+        let Form = FORM_LIB.Form
+        /**@type {Schema} */
+        let schema = {
+            name: {
+                type: String,
+                placeholder: 'Enter your name'
+            },
+            age: Number,
+            password: {
+                type: String,
+                specificType: 'password'
+            },
+            history: {
+                type: String,
+                rows: 2, // Presence of `rows` or `cols` attribute will render a textarea
+            },
+        }
+
+        /**@type {IForm} */
+        let formInstance
+    </script>
+
+</head>
+
+<body>
+    <h1>Examples for the browser</h1>
+    <hr>
+
+    <h2>Generate <strong>"table"</strong> format</h2>
+    <hr>
+    <div>
+        <p>
+            <code>formInstance.asTable()</code>
+        </p>
+        <p>
+            Wrap output in a table element when you assign <code>this.FormTag=false</code>
+        </p>
+        <form>
+            <table></table>
+        </form>
+    </div>
+
+
+    <script id="table-code">
+
+        class TableLikeForm extends Form {
+            configure() {
+                this.FormTag = false
+                return {
+                    schema
+                }
+            }
+        }
+        formInstance = new TableLikeForm
+        document.querySelector('table').innerHTML = formInstance.asTable()
+    </script>
+
+
+</body>
+
+</html>
