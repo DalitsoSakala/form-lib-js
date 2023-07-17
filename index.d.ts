@@ -53,9 +53,7 @@ declare interface Schema {
     [k: string]: field_metadata_t | CompoundSchemaMetadata | SchemaSettings
 }
 
-interface IElementType {
-    isTextInputElement(): boolean
-}
+
 
 declare interface IForm {
 
@@ -74,8 +72,9 @@ interface ISchemaPlaginFn {
 declare interface KVMap {
     [k: number | string]: any
 }
-declare interface IElement extends IElementType {
+declare interface IElement  {
     get Props(): any
+    get Tag(): string
     prepareRender()
     addAttrs(attrs: any): IElement
     addCssClass(className: string): IElement

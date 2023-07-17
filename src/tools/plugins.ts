@@ -13,21 +13,12 @@ export function applyPluginsToElement(element: IElement, configGroup: number) {
 
         if ('schema' in config) {
             let transformations = config.schema
-            let classes = transformations.$cssClasses || []
-            let loop=true
-            for (let field in classes) {
-                switch (field) {
-                    case 'textarea':
-                    case 'input':
+            let elementCssClasses = transformations.$cssClasses || {}
+            let classesToApply = elementCssClasses[element.Tag] || ''
 
-                        if (element.isTextInputElement()) {
-                            element.addCssClass((classes as any)[field])
-                            loop=false
-                        }
-                        break;
-                }
-                if(!loop) break
-            }
+            classesToApply.trim().length && element.addCssClass(classesToApply)
+
+
         }
 
     }

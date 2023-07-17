@@ -13,6 +13,11 @@ let plugin: ISchemaPlaginFn = function plugin() {
                 input: 'form-control',
                 textarea: 'form-control',
                 select: 'form-select',
+            },
+            $fieldCssClasses: {
+                input: 'input-group',
+                textarea: 'input-group',
+                select: 'input-group',
             }
         }
     }

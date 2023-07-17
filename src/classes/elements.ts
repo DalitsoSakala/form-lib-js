@@ -13,6 +13,9 @@ export abstract class BaseElement implements IElement {
     constructor(private readonly tag: string) {
 
     }
+    get Tag() {
+        return this.tag
+    }
     /**
      * Always read from this function when assigning css attributes
      */
@@ -21,9 +24,9 @@ export abstract class BaseElement implements IElement {
         let { cssClass, cssId } = this
 
         if (this.cssClass?.length)
-            props['class'] = cssClass + (' ' + this.attrs['class'] || '')
+            props['class'] = (cssClass + ' ' + (this.attrs['class'] || '')).trim()
         if (this.cssId?.length)
-            props['id'] = cssId
+            props['id'] = cssId.trim()
         else delete props['id']
 
         return props
@@ -36,13 +39,11 @@ export abstract class BaseElement implements IElement {
     prepareRender() { }
 
     addCssClass(className: string) {
-        this.cssClass += ' ' + className
+        let cls = this.cssClass || ''
+        this.cssClass = cls + ' ' + (className || '')
         return this
     }
 
-    isTextInputElement(): boolean {
-        return false
-    }
 
     addAttrs(attrs = <any>{}) {
 
@@ -127,14 +128,11 @@ export class TextAreaElement extends BaseElement {
         if (value !== null && value !== undefined)
             this.addAttrs({ value })
     }
-    isTextInputElement(): boolean {
-        return true
-    }
 
 }
 
 
-export class InputElement extends BaseElement  {
+export class InputElement extends BaseElement {
     constructor(type: input_type_t = 'text', value: any = null) {
         super('input')
         this.addAttrs({ type })
@@ -144,9 +142,6 @@ export class InputElement extends BaseElement  {
         this.hasClosingTag = false
     }
 
-    isTextInputElement(): boolean {
-        return true
-    }
 }
 
 
