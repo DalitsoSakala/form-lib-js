@@ -6,7 +6,9 @@ declare type layout_t = 'bs5' | undefined
 
 declare type form_render_type_t = 'div' | 'p' | 'table'
 
-declare type input_type_t = 'text' | 'checkbox' | 'number' | 'date' | 'datetime' | 'color' | 'phone' | 'email' | 'password' | 'radio';
+declare type text_input_type_t = 'text' | 'number' | 'date' | 'datetime' | 'color' | 'phone' | 'email' | 'password'
+
+declare type input_type_t = 'checkbox' | 'radio' | text_input_type_t;
 
 /**
  * When `fields` and `exclude` are not provided, all fields are rendered
@@ -19,6 +21,8 @@ declare interface FormConfigMetadata {
     refPrefix?: string
     renderType?: form_render_type_t
 }
+
+
 
 
 declare interface CompoundSchemaMetadata {
@@ -49,7 +53,9 @@ declare interface Schema {
     [k: string]: field_metadata_t | CompoundSchemaMetadata | SchemaSettings
 }
 
-
+interface IElementType {
+    isTextInputElement(): boolean
+}
 
 declare interface IForm {
 
@@ -64,4 +70,17 @@ declare interface IForm {
 /**Plugin function used to configure the schema */
 interface ISchemaPlaginFn {
     (): { schema: SchemaSettings }
+}
+declare interface KVMap {
+    [k: number | string]: any
+}
+declare interface IElement extends IElementType {
+    get Props(): any
+    prepareRender()
+    addAttrs(attrs: any): IElement
+    addCssClass(className: string): IElement
+
+    getAttr(attributeName: string): any
+    rmAttrs(...attrs: string[]): IElement
+    toString(): string
 }

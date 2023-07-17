@@ -25,6 +25,7 @@ let schema = {
 
 class MyForm extends Form {
     configure() {
+        this.plugins = ['bootstrap5']
         return {
             schema
         }

@@ -2,7 +2,7 @@ import * as tools from '../tools/index'
 
 
 
-export abstract class BaseElement {
+export abstract class BaseElement implements IElement {
     protected attrs = <any>{}
     protected cssClass = ''
     protected cssId = ''
@@ -35,6 +35,15 @@ export abstract class BaseElement {
      **/
     prepareRender() { }
 
+    addCssClass(className: string) {
+        this.cssClass += ' ' + className
+        return this
+    }
+
+    isTextInputElement(): boolean {
+        return false
+    }
+
     addAttrs(attrs = <any>{}) {
 
         for (let attr in attrs) {
@@ -58,6 +67,7 @@ export abstract class BaseElement {
         }
         return this
     }
+
     getAttr(attributeName: string) {
         return this.attrs[attributeName]
     }
@@ -103,7 +113,10 @@ export class ContainerElement<T extends BaseElement> extends BaseElement {
         tag.length &&
             this.addAttrs(attrs)
     }
+
 }
+
+
 
 
 export class TextAreaElement extends BaseElement {
@@ -114,10 +127,14 @@ export class TextAreaElement extends BaseElement {
         if (value !== null && value !== undefined)
             this.addAttrs({ value })
     }
+    isTextInputElement(): boolean {
+        return true
+    }
+
 }
 
 
-export class InputElement extends BaseElement {
+export class InputElement extends BaseElement  {
     constructor(type: input_type_t = 'text', value: any = null) {
         super('input')
         this.addAttrs({ type })
@@ -125,6 +142,10 @@ export class InputElement extends BaseElement {
         if (value !== null && value !== undefined)
             this.addAttrs({ value })
         this.hasClosingTag = false
+    }
+
+    isTextInputElement(): boolean {
+        return true
     }
 }
 

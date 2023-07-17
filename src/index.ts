@@ -1,13 +1,12 @@
 import * as tools from './tools/index'
-import { BaseElement, ContainerElement, InputElement, LabelElement, SelectElement, TextAreaElement } from './classes/elements'
+import { BaseElement as ComposableElement, ContainerElement, InputElement, LabelElement, SelectElement, TextAreaElement } from './classes/elements'
 
 namespace FORM_LIB {
 
 
 
-
-    function generateFieldElement(name: string, naiveMetadataArg: field_metadata_t, resolvedCompundMetadataArg: any = {}, attrs = <any>{}): BaseElement {
-        let instance: BaseElement | null = null
+    function generateFieldElement(name: string, naiveMetadataArg: field_metadata_t, resolvedCompundMetadataArg: any = {}, attrs = <any>{}, form: Form): ComposableElement {
+        let instance: ComposableElement | null = null
         let type: input_type_t | null = null
         let { choices = null, default: _default = null, rows = null, cols = null, specificType } = <CompoundSchemaMetadata>resolvedCompundMetadataArg
         let value = attrs.value || _default
@@ -34,14 +33,14 @@ namespace FORM_LIB {
                     throw new Error('A valid type is required')
                 Object.assign(truncated, _metadata)
                 delete truncated.type
-                return generateFieldElement(name, _metadata.type, truncated, attrs)
+                return generateFieldElement(name, _metadata.type, truncated, attrs, form)
         }
 
         if (choices?.length) {
             if (!specificType)
                 instance = new SelectElement(choices, attrs.value || _default)
             else if (specificType == 'radio') {
-                return new ContainerElement('div',
+                instance = new ContainerElement('div',
                     new Array<0>(choices.length).fill(
                         0
                     ).map((_, i) => {
@@ -57,6 +56,8 @@ namespace FORM_LIB {
                         )
                     })
                 )
+
+                tools.applyPluginsToElement(instance, form.GroupId)
             }
 
             delete resolvedCompundMetadataArg.choices
@@ -72,6 +73,9 @@ namespace FORM_LIB {
             'enum' in resolvedCompundMetadataArg && instance.addAttrs({ pattern: resolvedCompundMetadataArg.enum }) && delete resolvedCompundMetadataArg.enum
 
             instance.addAttrs({ ...resolvedCompundMetadataArg, ...attrs, name })
+
+            tools.applyPluginsToElement(instance, form.GroupId)
+
             return instance
         }
         else throw Error('Could not create an element to compose the layout')
@@ -80,7 +84,7 @@ namespace FORM_LIB {
 
 
     function generateDefaultLayout(metadata: FormConfigMetadata, containerTag: form_render_type_t = 'div', _incomingData = <any>{}, form: Form) {
-        let children: BaseElement[] = []
+        let children: ComposableElement[] = []
         let wrapChild = /(div|table)/.test(containerTag)
         let childWrapperTag = ''
         let rowTag = ''
@@ -93,10 +97,10 @@ namespace FORM_LIB {
 
         for (let name in schema) {
             let fieldCssId = (refPrefix.length ? refPrefix + '_' : '') + name
-            let outerWrapper: ContainerElement<BaseElement>
+            let outerWrapper: ContainerElement<ComposableElement>
             let value = _incomingData[name]
             let attrs = { id: fieldCssId, }
-            let field = generateFieldElement(name, schema[name] as field_metadata_t, {}, value && { ...attrs } || attrs)
+            let field = generateFieldElement(name, schema[name] as field_metadata_t, {}, value && { ...attrs } || attrs, form)
             let label = new LabelElement(name).addAttrs({ 'for': fieldCssId })
             let fieldWrapper = new ContainerElement(childWrapperTag, [field], {})
             let labelWrapper = new ContainerElement(childWrapperTag, [label], {})
@@ -108,11 +112,15 @@ namespace FORM_LIB {
     }
 
 
-    export abstract class Form extends BaseElement implements IForm {
+    export abstract class Form extends ComposableElement implements IForm {
         static #ref_count = 0
+
+        #ref!: number
 
         protected layoutPack: layout_t
         fieldCssClass = ''
+
+        plugins: string[] = []
 
 
         /**
@@ -123,6 +131,11 @@ namespace FORM_LIB {
         constructor(private readonly _incomingData = <any>{}, private readonly _args?: { instance: any }) {
             super('form')
             Form.#ref_count++
+            this.#ref = Form.#ref_count
+        }
+
+        get GroupId() {
+            return this.#ref
         }
 
 
@@ -130,6 +143,7 @@ namespace FORM_LIB {
         protected _render(renderType = <form_render_type_t>'div') {
             let config = this.#_validateConfiguration()
             let schema = Form.#_filterSchema(config)
+            tools.setFormPlugins(this.GroupId, this.plugins)
 
 
             this.children = generateDefaultLayout({ ...config, schema }, renderType, this._incomingData || {}, this)

@@ -18,13 +18,8 @@ let plugin: ISchemaPlaginFn = function plugin() {
     }
 }
 
-const NAME = 'bootstrap-5'
+export default plugin
 
 
 
-const API = {
-}
 
-API[NAME] = plugin
-
-export default API
