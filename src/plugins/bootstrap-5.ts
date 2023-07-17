@@ -4,7 +4,8 @@
  * @returns 
  */
 
-function apply() {
+
+let plugin: ISchemaPlaginFn = function plugin() {
     return {
         schema: {
 
@@ -24,6 +25,6 @@ const NAME = 'bootstrap-5'
 const API = {
 }
 
-API[NAME] = apply
+API[NAME] = plugin
 
 export default API

@@ -8,6 +8,19 @@ declare type form_render_type_t = 'div' | 'p' | 'table'
 
 declare type input_type_t = 'text' | 'checkbox' | 'number' | 'date' | 'datetime' | 'color' | 'phone' | 'email' | 'password' | 'radio';
 
+/**
+ * When `fields` and `exclude` are not provided, all fields are rendered
+ */
+declare interface FormConfigMetadata {
+    form: IForm,
+    schema: Schema
+    fields?: string[]
+    exclude?: string[]
+    refPrefix?: string
+    renderType?: form_render_type_t
+}
+
+
 declare interface CompoundSchemaMetadata {
     type: field_metadata_t
     /** Add more specificity to the intended type*/
@@ -23,9 +36,24 @@ declare interface CompoundSchemaMetadata {
 }
 
 
+/**Settings that can be assigned to the schema */
+declare interface SchemaSettings {
+    $sharedCssClasses?: string
+    $cssClasses?: {
+        [k: string]: string
+    }
+}
+
+
+declare interface Schema {
+    [k: string]: field_metadata_t | CompoundSchemaMetadata | SchemaSettings
+}
+
+
+
 declare interface IForm {
 
-    abstract configure(refPrefix: string): FormConfigMetadata
+    configure(refPrefix: string): FormConfigMetadata
 
     asP(): string
     asDiv(): string
@@ -33,18 +61,7 @@ declare interface IForm {
 }
 
 
-/**
- * When `fields` and `exclude` are not provided, all fields are rendered
- */
-declare interface FormConfigMetadata {
-    form: IForm,
-    schema: Schema
-    fields?: string[]
-    exclude?: string[]
-    refPrefix?: string
-    renderType?: form_render_type_t
-}
-
-declare interface Schema {
-    [k: string]: field_metadata_t | CompoundSchemaMetadata
+/**Plugin function used to configure the schema */
+interface ISchemaPlaginFn {
+    (): { schema: SchemaSettings }
 }
