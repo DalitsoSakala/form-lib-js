@@ -5,14 +5,14 @@ let { join } = require('path')
 
 let schema = {
     name: String,
-    color:{
+    color: {
         type: String,
-        specificType:'color'
+        specificType: 'color'
     },
     gender: {
-        choices:['male','female'],
-        type:String,
-        default:'male'
+        choices: ['male', 'female'],
+        type: String,
+        default: 'male',
     },
     isRegistered: Boolean,
     age: {
@@ -20,7 +20,7 @@ let schema = {
         min: 0,
         required: true
     },
-    date_of_birth: Date
+    date_of_birth: Date,
 }
 
 class MyForm extends Form {
