@@ -1,7 +1,7 @@
 import * as tools from './tools/index'
 import { BaseElement, ContainerElement, InputElement, LabelElement, SelectElement, TextAreaElement } from './classes/elements'
 
-  namespace FORM_LIB {
+namespace FORM_LIB {
 
 
 
@@ -204,4 +204,4 @@ import { BaseElement, ContainerElement, InputElement, LabelElement, SelectElemen
 
 }
 
-module.exports=FORM_LIB
+tools.registerModule(module, FORM_LIB, 'FORM_LIB')
