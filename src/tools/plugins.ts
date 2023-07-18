@@ -2,6 +2,25 @@ import * as plugins from '../plugins/index'
 
 let Configuration: Map<number, string[]> = new Map
 
+
+export function schemaPluginTransformElement(element: IElement, settings: SchemaSettings) {
+
+    // Input control
+    let elementCssClasses = settings.$cssClasses || {}
+    let classesToApply = elementCssClasses[element.Tag] || ''
+
+    classesToApply.trim().length && element.addCssClass(classesToApply)
+
+
+    // Input control wrapper
+    elementCssClasses = settings.$fieldWrapperCssClasses || {}
+    classesToApply = elementCssClasses[(element as IFieldContainer).ContainedFieldElement] || ''
+
+    classesToApply.trim().length && element.addCssClass(classesToApply)
+}
+
+
+
 export function applyPluginsToElement(element: IElement, configGroup: number) {
     let configuredPlugis = Configuration.get(configGroup)
 
@@ -12,22 +31,7 @@ export function applyPluginsToElement(element: IElement, configGroup: number) {
         let config = plugin()
 
         if ('schema' in config) {
-            let transformations = config.schema
-
-            // Input control
-            let elementCssClasses = transformations.$cssClasses || {}
-            let classesToApply = elementCssClasses[element.Tag] || ''
-
-            classesToApply.trim().length && element.addCssClass(classesToApply)
-
-
-            // Input control wrapper
-            elementCssClasses = transformations.$fieldWrapperCssClasses || {}
-            classesToApply = elementCssClasses[(element as IFieldContainer).ContainedFieldElement] || ''
-
-            classesToApply.trim().length && element.addCssClass(classesToApply)
-
-
+            schemaPluginTransformElement(element, config.schema)
         }
 
     }
