@@ -96,7 +96,6 @@ export abstract class BaseElement implements IElement {
 
         if (this.hasClosingTag && tag.length && this.useTag)
             template += `</${tag}>`
-        tag == 'tr' && console.log(template)
 
         return template
     }

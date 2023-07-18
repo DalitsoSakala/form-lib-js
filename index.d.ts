@@ -42,13 +42,9 @@ declare interface CompoundSchemaMetadata {
 
 /**Settings that can be assigned to the schema */
 declare interface SchemaSettings {
-    $sharedCssClasses?: string
-    $cssClasses?: {
-        [k: string]: string
-    }
-    $fieldWrapperCssClasses?: {
-        [k: string]: string
-    }
+    $sharedCssClasses?: KVStringMap
+    $cssClasses?: KVStringMap
+    $fieldWrapperCssClasses?: KVStringMap
 }
 
 
@@ -76,7 +72,11 @@ declare interface KVMap {
     [k: number | string]: any
 }
 
-declare interface IFieldContainer  extends IElement{
+declare interface KVStringMap {
+    [k: string]: string
+}
+
+declare interface IFieldContainer extends IElement {
     get ContainedField(): string
     set ContainedField(fieldName: string)
 

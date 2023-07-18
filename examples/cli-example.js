@@ -21,6 +21,9 @@ let schema = {
         required: true
     },
     date_of_birth: Date,
+    $cssClasses:{
+        gender:'gender-picker'
+    }
 }
 
 class MyForm extends Form {

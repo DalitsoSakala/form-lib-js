@@ -58,6 +58,7 @@ namespace FORM_LIB {
                 )
 
                 tools.applyPluginsToElement(instance, form.GroupId)
+                tools.schemaPluginTransformElement(instance, resolvedCompundMetadataArg)
             }
 
             delete resolvedCompundMetadataArg.choices
@@ -75,6 +76,7 @@ namespace FORM_LIB {
             instance.addAttrs({ ...resolvedCompundMetadataArg, ...attrs, name })
 
             tools.applyPluginsToElement(instance, form.GroupId)
+            tools.schemaPluginTransformElement(instance, resolvedCompundMetadataArg)
 
             return instance
         }
@@ -96,6 +98,8 @@ namespace FORM_LIB {
         rowTag = containerTag == 'table' ? 'tr' : containerTag
 
         for (let name in schema) {
+            if (tools.isSchemaSettingName(name)) continue
+            
             let fieldCssId = (refPrefix.length ? refPrefix + '_' : '') + name
             let outerWrapper: ContainerElement<ComposableElement>
             let value = _incomingData[name]
@@ -107,8 +111,12 @@ namespace FORM_LIB {
 
             fieldWrapper.ContainedField = name
             fieldWrapper.ContainedFieldElement = field.Tag
+
+
             tools.applyPluginsToElement(fieldWrapper, form.GroupId)
-            
+            tools.schemaPluginTransformElement(fieldWrapper, schema)
+
+
             outerWrapper = new ContainerElement(rowTag, [labelWrapper, fieldWrapper]).addAttrs({ 'class': form.fieldCssClass })
             children.push(outerWrapper)
         }

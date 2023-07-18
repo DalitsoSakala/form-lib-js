@@ -5,11 +5,11 @@
  */
 
 
-let plugin: ISchemaPlaginFn = function plugin() {
+export let plugin: ISchemaPlaginFn = function plugin() {
     return {
         schema: {
 
-            $cssClasses: {
+            $sharedCssClasses: {
                 input: 'form-control',
                 textarea: 'form-control',
                 select: 'form-select',
@@ -23,7 +23,6 @@ let plugin: ISchemaPlaginFn = function plugin() {
     }
 }
 
-export default plugin
 
 
 
