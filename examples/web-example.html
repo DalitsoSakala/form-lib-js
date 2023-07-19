@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@jsnodor/form-lib</title>
-
+    <!-- 
     <style>
         .row {
             display: flex;
@@ -35,11 +35,12 @@
             color: blue;
             background-color: rgb(197, 197, 197);
         }
-    </style>
-
+    </style> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="../dist/index-es6.js"></script>
 
-    <script>
+    <!-- <script>
         let Form = FORM_LIB.Form
         /**@type {Schema} */
         let schema = {
@@ -60,69 +61,41 @@
 
         /**@type {IForm} */
         let formInstance
-    </script>
+    </script> -->
 
 </head>
 
 <body>
-    <h1>Examples for the browser</h1>
-    <hr>
 
-    <h2>Generate <strong>"table"</strong> format</h2>
-    <hr>
-    <div>
-        <p>
-            <code>formInstance.asTable()</code>
-        </p>
-
-        <div class="row">
-
-            <form>
-
-                <p>
-                    Wrap output in a table element when you assign <code>this.FormTag=false</code>
-                </p>
-                <table></table>
-            </form>
-            <pre>
-            <code>
-    
- let schema = {
-    name: {
-        type: String,
-        placeholder: 'Enter your name'
-    },
-    age: Number,
-    password: {
-        type: String,
-        specificType: 'password'
-    },
-    history: {
-        type: String,
-        rows: 2, // Presence of `rows` or `cols` attribute will render a textarea
-    },
-}
-            </code>
-           </pre>
-        </div>
-
-    </div>
+    <div style="width:300px" id="main"></div>
 
 
-    <script id="table-code">
+    <script>
+        let Form = FORM_LIB.Form
+        let schema = {
+            firstName: {
+                type: String,
+                default: 'I am legend'
+            },
+            briefDescription: {
+                type: String,
+                rows: 3,
+                placeholder:'Supply text ...'
+            },
+            isComputerScientist: Boolean,
 
-        class TableLikeForm extends Form {
+        }
+
+        class MyForm extends Form {
             configure() {
-                this.FormTag = false
+                this.plugins = ['bootstrap5']
                 return {
                     schema
                 }
             }
         }
-        formInstance = new TableLikeForm
-        document.querySelector('table').innerHTML = formInstance.asTable()
+        document.querySelector('#main').innerHTML = new MyForm() + ''
     </script>
-
 
 </body>
 

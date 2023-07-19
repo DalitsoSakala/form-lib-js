@@ -29,7 +29,22 @@ export abstract class BaseElement implements IElement {
             props['id'] = cssId.trim()
         else delete props['id']
 
+        console.log('props is ',props)
         return props
+    }
+    hasAttrIn(attrMap: IMapping< any>): boolean {
+        for (let k in attrMap) {
+            if (k in this.attrs && this.attrs[k] == attrMap[k])
+                return true
+        }
+        return false
+    }
+    hasAttrs(attributes: IMapping<any>) {
+        for (let attrName in attributes) {
+            let attrValue = this.attrs[attrName]
+            if (attrValue != attributes[attrName]) return false
+        }
+        return true
     }
 
     /**

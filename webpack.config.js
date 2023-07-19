@@ -4,7 +4,7 @@ const path = require("path")
 module.exports = {
   mode: 'production',
   optimization: {
-    minimize: true,
+    minimize: !true,
   },
   entry: {
     commonjs: "./build/commonjs/index.js",

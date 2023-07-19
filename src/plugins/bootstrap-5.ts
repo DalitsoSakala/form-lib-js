@@ -15,7 +15,12 @@ export let plugin: ISchemaPlaginFn = function plugin() {
                 select: 'form-select',
             },
             $fieldWrapperCssClasses: {
-                input: 'input-group',
+                input: [
+                    {
+                        exclude: [{ type: 'radio' }, { type: 'checkbox' }],
+                        classes: 'form-control'
+                    }
+                ],
                 textarea: 'input-group',
                 select: 'input-group',
             }

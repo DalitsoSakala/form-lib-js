@@ -39,13 +39,50 @@ declare interface CompoundSchemaMetadata {
     choices?: any[] | null
 }
 
-
-/**Settings that can be assigned to the schema */
-declare interface SchemaSettings {
-    $sharedCssClasses?: KVStringMap
-    $cssClasses?: KVStringMap
-    $fieldWrapperCssClasses?: KVStringMap
+declare interface IMapping<T> {
+    [k: string]: T
 }
+
+/**Settings that can be assigned to the schema 
+ * 
+ * format example:
+ * ```js
+ * {
+ *  textarea:'form-field',
+ *  select:'form-select',
+ *  input:[
+ *      {exclude:['radio'],classes:'form-control'}
+ *  ]
+ * }
+ * ```
+ */
+declare interface SchemaSettings {
+
+    /**
+     * Add css classes to all fields
+     */
+    $sharedCssClasses?: IMapping<SchemaCssMappingConfig>
+
+    /**
+     * Add css classes specific fields
+     */
+    $cssClasses?: IMapping<SchemaCssMappingConfig>
+
+    /** T
+     * Add CSS classes to the wrappers of these form control tags
+     */
+    $fieldWrapperCssClasses?: IMapping<SchemaCssMappingConfig>
+}
+
+interface AlternateClassesValueConfig {
+    classes: string
+    exclude?: IMapping<any>
+    only?: IMapping<any>
+}
+type SchemaCssMappingConfig =
+    AlternateClassesValueConfig[]
+    | string
+
 
 
 declare interface Schema {
@@ -92,6 +129,8 @@ declare interface IElement {
     addCssClass(className: string): IElement
 
     getAttr(attributeName: string): any
+    hasAttrs(attributes: IMapping<any>): boolean
+    hasAttrIn(attrMap: IMapping<any>): boolean
     rmAttrs(...attrs: string[]): IElement
     toString(): string
 }

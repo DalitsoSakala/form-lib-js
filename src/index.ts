@@ -47,11 +47,16 @@ namespace FORM_LIB {
                         let chcs = choices!
                         let fieldId = (attrs.id ? attrs.id + '_' : '') + chcs[i]
                         let value = chcs[i]
-
+                        
+                        let ele=new InputElement('radio').addAttrs({ name, value, id: fieldId, checked: attrs.value == value || _default == value })
+                        
+                        tools.applyPluginsToElement(ele, form.GroupId)
+                        tools.schemaPluginTransformElement(ele, resolvedCompundMetadataArg)
+                        
                         return new ContainerElement('div',
                             [
                                 new LabelElement(value).addAttrs({ for: fieldId }),
-                                new InputElement('radio').addAttrs({ name, value, id: fieldId, checked: attrs.value == value || _default == value })
+                            ele
                             ]
                         )
                     })

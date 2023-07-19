@@ -5,24 +5,19 @@ let { join } = require('path')
 
 let schema = {
     name: String,
-    color: {
-        type: String,
-        specificType: 'color'
+    age:{
+        min:8,
+        type:Number
     },
-    gender: {
-        choices: ['male', 'female'],
-        type: String,
-        default: 'male',
+    isGrownUp:Boolean,
+    gender:{
+        type:String,
+        choices:['Male','Female','None']
     },
-    isRegistered: Boolean,
-    age: {
-        type: Number,
-        min: 0,
-        required: true
-    },
-    date_of_birth: Date,
-    $cssClasses:{
-        gender:'gender-picker'
+    shortBioInfo:{
+        type:String,
+        rows:4
+
     }
 }
 
