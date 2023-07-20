@@ -131,10 +131,11 @@ let { Form } = require('@jsnodor/form-lib')
 
 ## Pending features
 
-- Incorporate bootstrap css classes for the form
+- Incorporate [Bootstrap](https://getbootstrap.com/docs/5.0/getting-started/introduction/) css classes for the form 
+- Incorporate [Materialise CSS](https://materializecss.com/)
 
 ---
-Special thanks to [@chilusoft](https://github.com/chilusoft), [@lembani](https://github.com/lembani), [@WazaDev](https://github.com/wazabanda).
+Special thanks to [@chilusoft](ht1tps://github.com/chilusoft), [@lembani](https://github.com/lembani), [@WazaDev](https://github.com/wazabanda).
 
 ---
 Dedicated to [@AgnessKabuba](https://github.com/agnessmutentwa) for your Birthday. Enjoy your new year as you start your career in computer science!
